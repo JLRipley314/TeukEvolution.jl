@@ -3,6 +3,11 @@ uuid = "db7c6640-4064-41ef-bd4d-b1d7936fee3a"
 authors = ["Justin L. Ripley"]
 version = "0.1.0"
 
+[deps]
+FastGaussQuadrature = "442a2c76-b920-505d-bb47-c5924d526838"
+Jacobi = "83f21c0b-4282-5fbc-9e3f-f6da3d2e584c"
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+
 [compat]
 julia = "1.6"
 
