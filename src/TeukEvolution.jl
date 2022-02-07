@@ -52,6 +52,8 @@ function launch(paramfile::String)
    maxR = (cl^2)/minr
    dr   = maxR/(nx-1.0)
    dt   = min(cfl*dr,6.0/ny^2)
+   
+   println("Number of threads: $(Threads.nthreads())")
 
    println("Setting up output directory")
    if !isdir(outdir)
@@ -92,13 +94,12 @@ function launch(paramfile::String)
          cl, Rv, Yv
       )
       Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_f)
-      Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_p)
+      #Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_p)
    end
    println("Beginning evolution")
    for tc=1:nt
       Threads.@threads for mi=1:nm
-         Evo.evolve_psi4(psi4_f,psi4_p,evo_psi4,mi,dr,dt)
-         
+         Evo.evolve_psi4(psi4_f,psi4_p,evo_psi4,mi,dr,dt) 
          for j=1:ny
             for i=1:nx
                psi4_f.n[i,j,mi] = psi4_f.np1[i,j,mi] 
@@ -107,14 +108,15 @@ function launch(paramfile::String)
          end
       end
       
-      Threads.@threads for mi=1:nm
-         if tc%ts==0
+      if tc%ts==0
+         Threads.@threads for mi=1:nm
             println("time/bhm ", tc*dt/bhm)
             Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_f)
-            Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_p)
+            #Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_p)
          end 
       end
    end
+   println("Finished evolution")
    return nothing
 end
 
