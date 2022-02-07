@@ -1,3 +1,5 @@
+module TeukEvolution
+
 include("Fields.jl")
 include("Io.jl")
 include("Radial.jl")
@@ -14,36 +16,6 @@ import .Evolution as Evo
 
 import TOML
 
-@assert length(ARGS) == 1 
-@assert endswith(ARGS[1], ".toml")
-
-const params = TOML.parsefile(ARGS[1])
-
-const nx = convert(Int64,params["nx"])
-const ny = convert(Int64,params["ny"])
-const nt = convert(Int64,params["nt"])
-const ts = convert(Int64,params["ts"])
-
-psi_spin    = convert(Int64,params["psi_spin"])
-psi_falloff = convert(Int64,params["psi_falloff"])
-
-const cl  = convert(Float64,params["cl"])
-const cfl = convert(Float64,params["cfl"])
-const bhs = convert(Float64,params["bhs"])
-const bhm = convert(Float64,params["bhm"])
-
-const outdir = params["outdir"]
-##
-## Derived parameters
-##
-const nm   = length(params["m_vals"])
-const minr = bhm*(
-   1.0 + sqrt(1.0+(bhs/bhm))*sqrt(1.0-(bhs/bhm))
-  ) # horizon (uncompactified)
-const maxR = (cl^2)/minr
-const dr   = maxR/(nx-1.0)
-const dt   = min(cfl*dr,6.0/ny^2)
-
 #import MPI
 #MPI.Init()
 #const comm = MPI.COMM_WORLD
@@ -52,7 +24,33 @@ const dt   = min(cfl*dr,6.0/ny^2)
 #const mi = 1 + MPI.Comm_rank(comm) ## m index
 #const m_val = params["m_vals"][mi] ## value of m angular number
 
-function main()
+function launch(paramfile::String)
+   params = TOML.parsefile(paramfile)
+
+   nx = convert(Int64,params["nx"])
+   ny = convert(Int64,params["ny"])
+   nt = convert(Int64,params["nt"])
+   ts = convert(Int64,params["ts"])
+
+   psi_spin    = convert(Int64,params["psi_spin"])
+   psi_falloff = convert(Int64,params["psi_falloff"])
+
+   cl  = convert(Float64,params["cl"])
+   cfl = convert(Float64,params["cfl"])
+   bhs = convert(Float64,params["bhs"])
+   bhm = convert(Float64,params["bhm"])
+
+   outdir = params["outdir"]
+   ##
+   ## Derived parameters
+   ##
+   nm   = length(params["m_vals"])
+   minr = bhm*(
+      1.0 + sqrt(1.0+(bhs/bhm))*sqrt(1.0-(bhs/bhm))
+     ) # horizon (uncompactified)
+   maxR = (cl^2)/minr
+   dr   = maxR/(nx-1.0)
+   dt   = min(cfl*dr,6.0/ny^2)
 
    println("Setting up output directory")
    if !isdir(outdir)
@@ -119,8 +117,4 @@ function main()
    return nothing
 end
 
-@time main()
-#=using Profile
-@profile main()
-Profile.print()
-=#
+end
