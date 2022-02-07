@@ -1,9 +1,7 @@
 module Id
 
-include("Fields.jl")
 include("Sphere.jl")
 
-import .Fields: Field
 import .Sphere: swal 
 
 export set_psi
@@ -12,8 +10,8 @@ export set_psi
 Initial data for psi.
 
 function set_psi(
-      f::Field,
-      p::Field,
+      f,
+      p,
       spin::Int64,
       mi::Int64,
       mv::Int64,
@@ -28,8 +26,8 @@ function set_psi(
    )
 """
 function set_psi(
-      f::Field,
-      p::Field,
+      f,
+      p,
       spin::Int64,
       mi::Int64,
       mv::Int64,

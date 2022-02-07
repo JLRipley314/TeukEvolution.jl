@@ -25,6 +25,7 @@ import TOML
 #const m_val = params["m_vals"][mi] ## value of m angular number
 
 function launch(paramfile::String)
+   println("Launching run, params=$paramfile")
    params = TOML.parsefile(paramfile)
 
    nx = convert(Int64,params["nx"])

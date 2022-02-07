@@ -1,9 +1,5 @@
 module Io 
 
-include("Fields.jl")
-
-using .Fields: Field
-
 export save_csv
 
 """
@@ -13,7 +9,7 @@ save_csv(
    tc::Int64,
    mi::Int64,
    mv::Int64,
-   f::Field
+   f
    )
 """
 function save_csv(
@@ -23,7 +19,7 @@ function save_csv(
       rv::Vector{Float64},
       yv::Vector{Float64},
       outdir::String,
-      f::Field)
+      f)
       
    nx, ny = f.nx, f.ny 
 
