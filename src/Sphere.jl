@@ -170,8 +170,10 @@ function swal_vals(
    
    vals = zeros(Float64,ny,nl)
    
+   lmin = max(abs(spin),abs(m_ang))
+   
    for k=1:nl
-      l_ang = k-1
+      l_ang = k-1+lmin
       for j=1:length(roots)
          vals[j,k] = swal(spin,m_ang,l_ang,roots[j])
       end
@@ -202,10 +204,12 @@ function swal_laplacian_matrix(
 
    lap = zeros(Float64,ny,ny)
 
+   lmin = max(abs(spin),abs(m_ang))
+
    for j=1:ny
       for i=1:ny
          for k=1:nl
-            l = k-1
+            l = k-1+lmin
             lap[j,i] -= (l-spin)*(l+spin+1.0)*(swal(spin,m_ang,l,rv[i])*
                                                swal(spin,m_ang,l,rv[j])
                                               )

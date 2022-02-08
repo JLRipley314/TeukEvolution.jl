@@ -35,7 +35,7 @@ function test_swal_inner_product(
    for i=1:nl
       for j=i:nl
          val = Sphere.inner_product(vals[:,i],vals[:,j])
-         if i==j && i>max(abs(spin),abs(m_ang))
+         if i==j
             @test abs(val-1.0) < tol 
          else
             @test abs(val) < tol 
