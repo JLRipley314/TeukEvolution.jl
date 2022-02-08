@@ -1,11 +1,12 @@
-push!(LOAD_PATH,".")
-push!(LOAD_PATH,"../Source/")
+module TestRadial
 
-import Test: @test
-import Norms 
-import Radial
+include("Norms.jl")
+include("../src/Radial.jl")
 
-println("Tests for radial derivatives")
+import .Radial
+import .Norms 
+
+export norms_diff, norms_filter
 
 """
 Computes the norm of the difference between the numerical and
@@ -49,14 +50,6 @@ function norms_diff(nx::Int64,ny::Int64)::Tuple{Float64,Float64}
    return (n1, n2) 
 end
 
-n11, n12 = norms_diff(128,48)
-n21, n22 = norms_diff(256,60)
-
-println("Testing second order convergence of radial finite differences...")
-@test n11/n21 >= 3.5 && n11/n21 <= 4.5
-@test n12/n22 >= 3.5 && n12/n22 <= 4.5
-println("Passed test.")
-
 """
 Computes one norm of random field 
 v(nx,ny) before and after applying Kreiss-Oliger filter.
@@ -66,7 +59,6 @@ filter_norm(
    ny::Int64
    )::(Float64,Float64)
 """
-   
 function norms_filter(nx::Int64,ny::Int64)::Tuple{Float64,Float64}
    v = 0.1.*(rand(nx,ny) .- 0.5)
 
@@ -78,10 +70,5 @@ function norms_filter(nx::Int64,ny::Int64)::Tuple{Float64,Float64}
 
    return (n1, n2) 
 end
-n1, n2 = norms_filter(128,48)
-n3, n4 = norms_filter(180,90)
 
-println("Testing filter is TVD")
-@test n2 < n1 
-@test n4 < n3 
-println("Passed test.")
+end

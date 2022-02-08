@@ -8,7 +8,12 @@ setprecision(2048) # BigFloat precision in bits
 import FastGaussQuadrature as FGQ
 import Jacobi: jacobi
 
-export Y_vals, cos_vals, sin_vals, swal_laplacian_matrix, swal_filter_matrix, angular_matrix_mult!
+export Y_vals, cos_vals, sin_vals, swal, swal_laplacian_matrix, swal_filter_matrix, angular_matrix_mult!
+
+function convertBF(v)
+   return parse(BigFloat,"$v")
+end
+
 """
 number of l angular values given ny theta values
 
@@ -26,6 +31,7 @@ function num_l(ny::Int64)::Int64
    @assert ny>(2*max_s+2*max_m)+4
    return ny-2*max_s-2*max_m
 end
+
 """
 Computes Gauss-Legendre points (y) over the interval [-1,1].
 
@@ -39,6 +45,7 @@ function Y_vals(ny::Int64)::Vector{Float64}
 
    return roots 
 end
+
 """
 Computes inner product over the interval [-1,1] using
 Gauss quadrature:
@@ -65,6 +72,7 @@ function inner_product(
 
    return s 
 end
+
 """
 Computes cos(y) at Gauss-Legendre points over interval [-1,1].
 
@@ -78,6 +86,7 @@ function cos_vals(ny::Int64)::Vector{Float64}
 
    return [-pt for pt in roots]
 end
+
 """
 Computes sin(y) at Gauss-Legendre points over interval [-1,1].
 
@@ -90,11 +99,12 @@ function sin_vals(ny::Int64)::Vector{Float64}
    roots, weights= FGQ.gausslegendre(ny) 
    
    return [convert(Float64,
-                   sqrt(1.0-BigFloat(pt))*sqrt(1.0+BigFloat(pt))
+                   sqrt(1.0-convertBF(pt))*sqrt(1.0+convertBF(pt))
                   )
            for pt in roots
           ]
 end
+
 """
 Computes the spin-weighted associated Legendre function Y^s_{lm}(y).
 
@@ -111,31 +121,33 @@ function swal(
       l_ang::Int64,
       y::Float64
    )::Float64
-   
-   al = abs(BigFloat(m_ang)-spin)
-   be = abs(BigFloat(m_ang)+spin)
+   @assert l_ang>=abs(m_ang)
+
+   al = abs(m_ang-spin)
+   be = abs(m_ang+spin)
    @assert((al+be)%2==0)
-   n = BigFloat(l_ang) - (al+be)/2
+   n = l_ang - (al+be)/2
 
    if n<0
       return convert(Float64,0)
    end
 
    norm = sqrt(
-      (2*n+al+be+1)*(BigFloat(2)^(-al-be-1.0))
-   *  factorial(BigFloat(n+al+be))/factorial(BigFloat(n+al))
-   *  factorial(BigFloat(n      ))/factorial(BigFloat(n+be))
+      (2*n+al+be+1)*(convertBF(2)^(-al-be-1.0))
+   *  factorial(convertBF(n+al+be))/factorial(convertBF(n+al))
+   *  factorial(convertBF(n      ))/factorial(convertBF(n+be))
    )
-   norm *= BigFloat(-1)^(max(m_ang,-spin))
+   norm *= convertBF(-1)^(max(m_ang,-spin))
 
    return convert(
       Float64,
       norm
-      *(BigFloat(1-y)^(al/2.))
-      *(BigFloat(1+y)^(be/2.))
-      *jacobi(BigFloat(y),BigFloat(n),BigFloat(al),BigFloat(be))
+      *(convertBF(1-y)^(al/2.))
+      *(convertBF(1+y)^(be/2.))
+      *jacobi(convertBF(y),convertBF(n),convertBF(al),convertBF(be))
    )
 end
+
 """
 Computes matrix swal^s_{lm}(y) at Gauss-Legendre points,
 over a grid of l values (and fixed m).
@@ -166,6 +178,7 @@ function swal_vals(
    end
    return vals
 end
+
 """
 Computes matrix to compute spin-weighted spherical harmonic laplacian.
 To compute the spherical laplacian use the function 
@@ -203,17 +216,17 @@ function swal_laplacian_matrix(
 
    return lap
 end
+
 """
-Computes matrix to compute low pass filter
-of spin-weighted spherical harmonic laplacian.
-To compute the spherical laplacian use the function 
-set_lap!(v_lap,v,lap_matrix)
+Computes matrix to compute low pass filter.
 
 swal_filter_matrix(
    ny::Int64,
    spin::Int64,
    m_ang::Int64
    )::Matrix{Float64}
+
+Multiply the matrix on the left: v[i]*M[i,j] -> v[j]
 """
 function swal_filter_matrix(
       ny::Int64,
@@ -227,10 +240,11 @@ function swal_filter_matrix(
 
    filter = zeros(Float64,ny,ny)
 
+   lmin = max(abs(spin),abs(m_ang))
+
    for j=1:ny
       for i=1:ny
-         for k=1:nl
-            l = k-1
+         for l=lmin:(nl-1+lmin)
             filter[j,i] += exp(-30.0*(l/(nl-1.0))^10)*(
                            swal(spin,m_ang,l,rv[i])*
                            swal(spin,m_ang,l,rv[j])
@@ -242,6 +256,7 @@ function swal_filter_matrix(
 
    return filter
 end
+
 """
 Matrix multiplication in the angular direction
 
