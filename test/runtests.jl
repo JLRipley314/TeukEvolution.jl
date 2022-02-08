@@ -28,7 +28,7 @@ n3, n4 = TestRadial.norms_filter(180,90)
 #============================================================================
 ## Testing Spherical functions
 ============================================================================#
-#=
+
 TestSphere.test_swal_inner_product(48,-2,-3)
 TestSphere.test_swal_inner_product(48, 0,-3)
 TestSphere.test_swal_inner_product(48, 1,-3)
@@ -73,9 +73,9 @@ TestSphere.test_norm_swal_lap(32, 2,2,2)
 TestSphere.test_norm_swal_lap(48,-1,5,23)
 TestSphere.test_norm_swal_lap(48, 0,5,23)
 TestSphere.test_norm_swal_lap(48, 2,5,23)
-=#
+
 TestSphere.test_norm_filter(32,-2,2,2)
 TestSphere.test_norm_filter(32,-1,3,4)
 TestSphere.test_norm_filter(32, 0,1,5)
-TestSphere.test_norm_filter(32, 1,0,3)
-TestSphere.test_norm_filter(32, 2,-1,1)
+TestSphere.test_norm_filter(32, 1,0,2)
+TestSphere.test_norm_filter(32, 2,-1,2)

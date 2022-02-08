@@ -104,7 +104,7 @@ function test_norm_filter(
    ## with the filter the norm should go to zero
    v1 = [0.1*(rand()-0.5)*Sphere.swal(spin,m_ang,l_ang,y) for y in Yv]
    v2 = zeros(Float64,ny) 
-
+  
    filter = Sphere.swal_filter_matrix(ny,spin,m_ang)
 
    for j=1:ny
@@ -113,12 +113,11 @@ function test_norm_filter(
       end
    end
 
-
    ## compute integral over interval [-1,1] of difference
    i1 = abs(Sphere.inner_product(ones(ny), abs.(v1)))
    i2 = abs(Sphere.inner_product(ones(ny), abs.(v2)))
 
-   println("Test: filter(rand) smoothens:\tny=$ny\tspin=$spin\tm_ang=$m_ang")
+   println("Test: filter(rand) smoothens:\tny=$ny\tspin=$spin\tm_ang=$m_ang\tl_ang=$l_ang")
    @test i2 < i1 
 
    return nothing
