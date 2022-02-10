@@ -3,7 +3,7 @@ Spin-weighted spherical harmonics and associated functions and operators.
 """
 module Sphere
 
-setprecision(2048) # BigFloat precision in bits
+#setprecision(2048) # BigFloat precision in bits
 
 import FastGaussQuadrature as FGQ
 import Jacobi: jacobi
@@ -11,7 +11,7 @@ import Jacobi: jacobi
 export Y_vals, cos_vals, sin_vals, swal, swal_laplacian_matrix, swal_filter_matrix, angular_matrix_mult!
 
 function convertBF(v)
-   return parse(BigFloat,"$v")
+   return return v#parse(Float64,"$v")
 end
 
 """

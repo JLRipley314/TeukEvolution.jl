@@ -109,8 +109,8 @@ function launch(paramfile::String)
       end
       
       if tc%ts==0
+         println("time/bhm ", tc*dt/bhm)
          Threads.@threads for mi=1:nm
-            println("time/bhm ", tc*dt/bhm)
             Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_f)
             #Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_p)
          end 
