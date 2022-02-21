@@ -80,21 +80,27 @@ function launch(paramfile::String)
    ## Initial data
    ##=============
    println("Initial data")
-   
-   for mi=1:nm
-      Id.set_psi(psi4_f, psi4_p, 
-         psi_spin,
-         mi,
-         Mv[mi],
-         params["id_l_ang"][mi],
-         params["id_ru"][mi], 
-         params["id_rl"][mi], 
-         params["id_width"][mi],
-         params["id_amp"][mi][1] + params["id_amp"][mi][2]*im,
-         cl, Rv, Yv
-      )
-      Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_f)
-      #Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_p)
+ 
+   if params["id_kind"]=="gaussian"
+      for mi=1:nm
+         Id.set_gaussian!(psi4_f, psi4_p, 
+            psi_spin,
+            mi,
+            Mv[mi],
+            params["id_l_ang"][mi],
+            params["id_ru"][mi], 
+            params["id_rl"][mi], 
+            params["id_width"][mi],
+            params["id_amp"][mi][1] + params["id_amp"][mi][2]*im,
+            cl, Rv, Yv
+         )
+         Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_f)
+         #Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_p)
+      end
+   elseif params["id_kind"]=="qnm"
+      Id.set_qnm!()
+   else
+      throw(DomainError(params["id_kind"],"Unsupported `id_kind`")) 
    end
    println("Beginning evolution")
    for tc=1:nt

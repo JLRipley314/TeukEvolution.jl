@@ -11,11 +11,12 @@ a horizon penetrating, hyperboloidally compactified system of coordinates.
 
 ## Initial data
 
-There are choices of initial data.
+There are two choices of initial data.
 
 * Gaussian pulse initial data.
 
-* Quasinormal mode initial data. This is generated with 
+* Quasinormal mode initial data. These need to be read in from HDF5 files that
+are generated with 
 [TeukolskyQNMFunctions.jl](https://github.com/JLRipley314/TeukolskyQNMFunctions.jl). 
 
 ## Visualization
