@@ -9,7 +9,6 @@ import .TestRadial, .TestSphere
 #============================================================================
 ## Testing Radial functions
 ============================================================================#
-
 # Test 4th order convergence of derivatives
 
 n11, n12 = TestRadial.norms_diff(128,48)
@@ -28,7 +27,6 @@ n3, n4 = TestRadial.norms_filter(180,90)
 #============================================================================
 ## Testing Spherical functions
 ============================================================================#
-
 TestSphere.test_swal_inner_product(48,-2,-3)
 TestSphere.test_swal_inner_product(48, 0,-3)
 TestSphere.test_swal_inner_product(48, 1,-3)

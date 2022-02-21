@@ -1,10 +1,9 @@
 module TestRadial
 
-include("Norms.jl")
 include("../src/Radial.jl")
-
 import .Radial
-import .Norms 
+
+using LinearAlgebra: norm
 
 export norms_diff, norms_filter
 
@@ -44,8 +43,8 @@ function norms_diff(nx::Int64,ny::Int64)::Tuple{Float64,Float64}
    Radial.set_d1!(v2_rd1,v1,dr)
    Radial.set_d2!(v2_rd2,v1,dr)
 
-   n1 = Norms.one_norm(v1_rd1 .- v2_rd1)
-   n2 = Norms.one_norm(v1_rd2 .- v2_rd2)
+   n1 = norm(v1_rd1 .- v2_rd1,1)/length(v1_rd1)
+   n2 = norm(v1_rd2 .- v2_rd2,1)/length(v1_rd2)
 
    return (n1, n2) 
 end
@@ -64,10 +63,10 @@ function norms_filter(nx::Int64,ny::Int64)::Tuple{Float64,Float64}
 
    tmp = deepcopy(v)
 
-   n1 = Norms.one_norm(v)
+   n1 = norm(v,1)/length(v) 
    Radial.filter!(v,tmp,1.0)
-   n2 = Norms.one_norm(v)
-
+   n2 = norm(v,1)/length(v)
+   
    return (n1, n2) 
 end
 
