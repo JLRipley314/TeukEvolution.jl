@@ -13,7 +13,7 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 [compat]
 FastGaussQuadrature = "0.4"
 HDF5 = "0.16"
-Jacobi = "0.5"
+Jacobi = "0.4"
 Polynomials = "3"
 julia = "1.6"
 
