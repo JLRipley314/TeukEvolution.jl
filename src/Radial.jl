@@ -13,6 +13,7 @@ R_vals(
 function R_vals(nx::Int64, dr::Float64)::Vector{Float64}
    return [dr*i for i=1:nx]
 end
+
 """
 Takes first derivative in radial direction.
 
@@ -27,17 +28,67 @@ function set_d1!(
       v,
       dr::Float64,
      )
-   inv_h_dr = 0.5/dr
    inv_dr   = 1.0/dr
 
    nx, ny = size(dv)
 
    for j=1:ny
-      for i=2:nx-1
-         dv[i,j] = (v[i+1,j]-v[i-1,j])*inv_h_dr
+      for i=3:nx-2
+         dv[i,j] = (-
+                    (1.0/12.0)*v[i+2,j]
+                    +
+                    (2.0/3.0 )*v[i+1,j]
+                    -
+                    (2.0/3.0 )*v[i-1,j]
+                    +
+                    (1.0/12.0)*v[i-2,j]
+                   )*inv_dr
       end
-      dv[1, j]  = (-0.5*v[   3,j] + 2*v[   2,j] - 1.5*v[ 1,j])*inv_dr
-      dv[nx,j]  = ( 0.5*v[nx-2,j] - 2*v[nx-1,j] + 1.5*v[nx,j])*inv_dr
+      dv[1,j] = (-
+                 3.0 *v[5,j]
+                 +
+                 16.0*v[4,j]
+                 -
+                 36.0*v[3,j] 
+                 +
+                 48.0*v[2,j]
+                 -
+                 25.0*v[1,j]
+                )*(1.0/12.0)*inv_dr
+      dv[2,j] = (+
+                 1.0 *v[5,j]
+                 -
+                 6.0 *v[4,j]
+                 +
+                 18.0*v[3,j]
+                 -
+                 10.0*v[2,j]
+                 -
+                 3.0 *v[1,j]
+                )*(1.0/12.0)*inv_dr
+      
+      dv[nx,j] = -(-
+                   3.0 *v[nx-4,j]
+                   +
+                   16.0*v[nx-3,j]
+                   -
+                   36.0*v[nx-2,j] 
+                   +
+                   48.0*v[nx-1,j]
+                   -
+                   25.0*v[nx,j]
+                  )*(1.0/12.0)*inv_dr
+      dv[nx-1,j] = -(+
+                     1.0 *v[nx-4,j]
+                     -
+                     6.0 *v[nx-3,j]
+                     +
+                     18.0*v[nx-2,j]
+                     -
+                     10.0*v[nx-1,j]
+                     -
+                     3.0 *v[nx,j]
+                    )*(1.0/12.0)*inv_dr
    end
    return nothing
 end
@@ -60,45 +111,105 @@ function set_d2!(
    nx, ny = size(dv)
 
    for j=1:ny
-      for i=2:nx-1
-         dv[i,j] = (v[i+1,j] - 2.0*v[i,j] + v[i-1,j])*inv_dr2
+      for i=3:nx-2
+         dv[i,j] = (-
+                    1.0 *v[i+2,j]
+                    +
+                    16.0*v[i+1,j]
+                    -
+                    30.0*v[i  ,j]
+                    +
+                    16.0*v[i-1,j]
+                    -
+                    1.0 *v[i-2,j]
+                   )*(1.0/12.0)*inv_dr2
       end
-      dv[1,j]  = (-1*v[4,j]    + 4.0*v[   3,j] - 5.0*v[   2,j] + 2.0*v[ 1,j])*inv_dr2
-      dv[nx,j] = (-1*v[nx-3,j] + 4.0*v[nx-2,j] - 5.0*v[nx-1,j] + 2.0*v[nx,j])*inv_dr2
+      dv[1,j] = (-
+                 10.0 *v[6,j]
+                 +
+                 61.0 *v[5,j]
+                 -
+                 156.0*v[4,j]
+                 +
+                 214.0*v[3,j]
+                 -
+                 154.0*v[2,j]
+                 +
+                 45.0 *v[1,j]
+                )*(1.0/12.0)*inv_dr2
+      dv[2,j] = (+
+                 1.0 *v[6,j]
+                 -
+                 6.0 *v[5,j]
+                 +
+                 14.0*v[4,j]
+                 -
+                 4.0 *v[3,j]
+                 -
+                 15.0*v[2,j]
+                 +
+                 10.0*v[1,j]
+                )*(1.0/12.0)*inv_dr2
+      dv[nx,j] = (-
+                  10.0 *v[nx-5,j]
+                  +
+                  61.0 *v[nx-4,j]
+                  -
+                  156.0*v[nx-3,j]
+                  +
+                  214.0*v[nx-2,j]
+                  -
+                  154.0*v[nx-1,j]
+                  +
+                  45.0 *v[nx  ,j]
+                 )*(1.0/12.0)*inv_dr2
+      dv[nx-1,j] = (+
+                    1.0 *v[nx-5,j]
+                    -
+                    6.0 *v[nx-4,j]
+                    +
+                    14.0*v[nx-3,j]
+                    -
+                    4.0 *v[nx-2,j]
+                    -
+                    15.0*v[nx-1,j]
+                    +
+                    10.0*v[nx  ,j]
+                   )*(1.0/12.0)*inv_dr2
    end
    return nothing
 end
-"""
-Low pass filter (ep controls how strongly the filter should ask,
-and should be in [0,1]) 
 
-filter!(
-   v, 
-   ep::Float64
-   )
 """
+6th order Kreiss-Oliger dissipation
+""" 
 function filter!(
-      v, 
-      tmp, 
-      ep::Float64
+      v,
+      tmp,
+      eps_KO::Float64 
      )
    nx, ny = size(v)
 
    for j=1:ny
-      for i=3:nx-2
-         v[i,j] = (
-         +        (    -ep/16.) *tmp[i-2,j]
-         +        ( 4.0*ep/16.) *tmp[i-1,j]
-         + (1.0 + (-6.0*ep/16.))*tmp[i  ,j]
-         +        ( 4.0*ep/16.) *tmp[i+1,j]
-         +        (    -ep/16.) *tmp[i+2,j]
-         )
+      for i=1:nx
+         tmp[i,j] = v[i,j]
       end
-      v[1,j]    = tmp[1,j]
-      v[2,j]    = tmp[2,j]
-      v[nx-1,j] = tmp[nx-1,j]
-      v[nx  ,j] = tmp[nx  ,j]
    end
+
+   for j=1:ny
+      for i=4:nx-3
+         v[i,j] = (
+                         (eps_KO/64.) *tmp[i-3,j]
+           +        (-6.0*eps_KO/64.) *tmp[i-2,j]
+           +        (15.0*eps_KO/64.) *tmp[i-1,j]
+           + (1.0 - (20.0*eps_KO/64.))*tmp[i  ,j]
+           +        (15.0*eps_KO/64.) *tmp[i+1,j]
+           +        (-6.0*eps_KO/64.) *tmp[i+2,j]
+           +             (eps_KO/64.) *tmp[i+3,j]
+          )
+      end
+   end
+   
    return nothing
 end
 

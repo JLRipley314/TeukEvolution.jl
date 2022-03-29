@@ -14,8 +14,8 @@ import .TestRadial, .TestSphere
 n11, n12 = TestRadial.norms_diff(128,48)
 n21, n22 = TestRadial.norms_diff(256,60)
 
-@test n11/n21 >= 3.5 && n11/n21 <= 4.5
-@test n12/n22 >= 3.5 && n12/n22 <= 4.5
+@test n11/n21 >= 15.5
+@test n12/n22 >= 15.5
 
 # Test filter is TVD
 

@@ -283,9 +283,6 @@ function evolve_psi4(
          
          f_np1[i,j] += sixth*dt*f_k[i,j]
          p_np1[i,j] += sixth*dt*p_k[i,j]   
-         
-         f_tmp[i,j] = f_np1[i,j] 
-         p_tmp[i,j] = p_np1[i,j] 
       end
    end
    Radial.filter!(f_np1,f_tmp,0.5)
