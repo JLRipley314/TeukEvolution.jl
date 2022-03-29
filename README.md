@@ -5,6 +5,7 @@
 [![Build Status](https://github.com/JLRipley314/TeukEvolution.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JLRipley314/TeukEvolution.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/JLRipley314/TeukEvolution.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JLRipley314/TeukEvolution.jl)
 
+**Buyer Beware: this code is a work in progress**
 
 `TeukEvolution.jl` contains routines to evolve the Teukolsky equation in
 a horizon penetrating, hyperboloidally compactified system of coordinates.
