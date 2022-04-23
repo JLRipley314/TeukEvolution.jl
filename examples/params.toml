@@ -1,9 +1,9 @@
-outdir = "nearextremal"
+outdir = "test"
 
 nx = 64
 ny = 32
-nt = 80000
-ts = 50  # save every ts time steps
+nt = 10000
+ts = 1000000000  # save every ts time steps
 
 psi_spin    = -2 # spin-weight of linear evolution scalar
 psi_falloff = -1 # falloff (in r) of linear evolution scalar

@@ -13,7 +13,6 @@ import .Radial
 import .Sphere
 import .Id
 import .Evolution as Evo
-
 import TOML
 
 #import MPI
@@ -42,9 +41,9 @@ function launch(paramfile::String)
    bhm = convert(Float64,params["bhm"])
 
    outdir = params["outdir"]
-   ##
+   ##===================
    ## Derived parameters
-   ##
+   ##===================
    nm   = length(params["m_vals"])
    minr = bhm*(
       1.0 + sqrt(1.0+(bhs/bhm))*sqrt(1.0-(bhs/bhm))
@@ -102,10 +101,15 @@ function launch(paramfile::String)
    else
       throw(DomainError(params["id_kind"],"Unsupported `id_kind`")) 
    end
+   
+   ##===================
+   ## Time evolution 
+   ##===================
    println("Beginning evolution")
    for tc=1:nt
       Threads.@threads for mi=1:nm
          Evo.evolve_psi4(psi4_f,psi4_p,evo_psi4,mi,dr,dt) 
+         
          for j=1:ny
             for i=1:nx
                psi4_f.n[i,j,mi] = psi4_f.np1[i,j,mi] 

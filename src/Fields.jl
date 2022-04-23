@@ -13,18 +13,18 @@ struct Field
    ny::Int64
    nz::Int64
 
-   n  ::Array{ComplexF64}
-   tmp::Array{ComplexF64}
-   np1::Array{ComplexF64}
+   n  ::Array{ComplexF64,3}
+   tmp::Array{ComplexF64,3}
+   np1::Array{ComplexF64,3}
 
-   k::Array{ComplexF64} 
+   k::Array{ComplexF64,3} 
 
-   rad_d1::Array{ComplexF64} 
-   rad_d2::Array{ComplexF64} 
+   rad_d1::Array{ComplexF64,3} 
+   rad_d2::Array{ComplexF64,3} 
    
-   raised ::Array{ComplexF64} 
-   lowered::Array{ComplexF64}  
-   sph_lap::Array{ComplexF64} 
+   raised ::Array{ComplexF64,3} 
+   lowered::Array{ComplexF64,3}  
+   sph_lap::Array{ComplexF64,3} 
 
    Field(name, 
          spin, boost, falloff, 
