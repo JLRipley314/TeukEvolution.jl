@@ -86,6 +86,94 @@ function test_norm_swal_lap(
 end
 
 """
+Computes the norm of the difference between the numerical and
+exact raising of a spin-weighted spherical harmonic in
+real space.
+
+test_norm_swal_raising(
+   ny::Int64,
+   spin::Int64,
+   m_ang::Int64,
+   l_ang::Int64
+   )::Nothing
+"""
+function test_norm_swal_raising(
+      ny::Int64,
+      spin::Int64,
+      m_ang::Int64,
+      l_ang::Int64
+   )::Nothing
+   
+   Yv = Sphere.Y_vals(ny)
+
+   swal_s   = [Sphere.swal(spin,  m_ang,l_ang,y) for y in Yv]
+   swal_sp1 = [Sphere.swal(spin+1,m_ang,l_ang,y) for y in Yv]
+
+   swal_raise_v1 = [sqrt((l_ang-spin)*(l_ang+spin+1.0))*v for v in swal_sp1]
+   swal_raise_v2 = zeros(Float64,ny) 
+   
+   raise = Sphere.swal_raising_matrix(ny,spin,m_ang)
+
+   for j=1:ny
+      for k=1:ny
+         swal_raise_v2[j] += swal_s[k]*raise[k,j]
+      end
+   end
+
+   ## compute integral over interval [-1,1] of difference
+   n = Sphere.inner_product(ones(ny),swal_raise_v1 .- swal_raise_v2)
+
+   println("Test: D_sY^s_{lm}:\tny=$ny\tspin=$spin\tm_ang=$m_ang\tl=$l_ang")
+   @test abs(n) < tol 
+
+   return nothing
+end
+
+"""
+Computes the norm of the difference between the numerical and
+exact lowering of a spin-weighted spherical harmonic in
+real space.
+
+test_norm_swal_lowering(
+   ny::Int64,
+   spin::Int64,
+   m_ang::Int64,
+   l_ang::Int64
+   )::Nothing
+"""
+function test_norm_swal_lowering(
+      ny::Int64,
+      spin::Int64,
+      m_ang::Int64,
+      l_ang::Int64
+   )::Nothing
+   
+   Yv = Sphere.Y_vals(ny)
+
+   swal_s   = [Sphere.swal(spin,  m_ang,l_ang,y) for y in Yv]
+   swal_sm1 = [Sphere.swal(spin-1,m_ang,l_ang,y) for y in Yv]
+
+   swal_lower_v1 = [-sqrt((l_ang+spin)*(l_ang-spin+1.0))*v for v in swal_sm1]
+   swal_lower_v2 = zeros(Float64,ny) 
+   
+   lower = Sphere.swal_lowering_matrix(ny,spin,m_ang)
+
+   for j=1:ny
+      for k=1:ny
+         swal_lower_v2[j] += swal_s[k]*lower[k,j]
+      end
+   end
+
+   ## compute integral over interval [-1,1] of difference
+   n = Sphere.inner_product(ones(ny),swal_lower_v1 .- swal_lower_v2)
+
+   println("Test: D'_sY^s_{lm}:\tny=$ny\tspin=$spin\tm_ang=$m_ang\tl=$l_ang")
+   @test abs(n) < tol 
+
+   return nothing
+end
+
+"""
 Test that the swal filter matrix acts as a low pass filter
 for angular perturbations.
 """

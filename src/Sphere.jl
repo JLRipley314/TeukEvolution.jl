@@ -183,8 +183,6 @@ end
 
 """
 Computes matrix to compute spin-weighted spherical harmonic laplacian.
-To compute the spherical laplacian use the function 
-set_lap!(v_lap,v,lap_matrix)
 
 swal_laplacian_matrix(
    ny::Int64,
@@ -198,20 +196,19 @@ function swal_laplacian_matrix(
       m_ang::Int64
    )::Matrix{Float64}
    
-   rv, wv = FGQ.gausslegendre(ny) 
+   yv, wv = FGQ.gausslegendre(ny) 
 
-   nl = num_l(ny) 
+   nl   = num_l(ny) 
+   lmin = max(abs(spin),abs(m_ang))
 
    lap = zeros(Float64,ny,ny)
-
-   lmin = max(abs(spin),abs(m_ang))
 
    for j=1:ny
       for i=1:ny
          for k=1:nl
             l = k-1+lmin
-            lap[j,i] -= (l-spin)*(l+spin+1.0)*(swal(spin,m_ang,l,rv[i])*
-                                               swal(spin,m_ang,l,rv[j])
+            lap[j,i] -= (l-spin)*(l+spin+1.0)*(swal(spin,m_ang,l,yv[i])*
+                                               swal(spin,m_ang,l,yv[j])
                                               )
          end
          lap[j,i] *= wv[j]
@@ -219,6 +216,89 @@ function swal_laplacian_matrix(
    end
 
    return lap
+end
+
+"""
+Computes matrix to raise spin-weighted spherical harmonics.
+
+swal_raising_matrix(
+   ny::Int64,
+   spin::Int64,
+   m_ang::Int64
+   )::Matrix{Float64}
+"""
+function swal_raising_matrix(
+      ny::Int64,
+      spin::Int64,
+      m_ang::Int64
+   )::Matrix{Float64}
+   
+   yv, wv = FGQ.gausslegendre(ny) 
+
+   nl   = num_l(ny) 
+   lmin = max(abs(spin), abs(spin+1), abs(m_ang))
+
+   raise = zeros(Float64,ny,ny)
+
+   for (i,yi) in enumerate(yv)
+      for (j,yj) in enumerate(yv) 
+
+         for k=1:nl
+            l = k-1+lmin
+            raise[j,i] += ( 
+                  sqrt((l-spin)*(l+spin+1.0)) 
+                  *
+                  wv[j]*swal(spin,m_ang,l,yj)  
+                  *
+                  swal(spin+1,m_ang,l,yi)
+                 )
+         end
+      end
+   end
+
+   return raise 
+end
+
+"""
+Computes matrix to lower spin-weighted spherical harmonics.
+
+swal_lowering_matrix(
+   ny::Int64,
+   spin::Int64,
+   m_ang::Int64
+   )::Matrix{Float64}
+"""
+function swal_lowering_matrix(
+      ny::Int64,
+      spin::Int64,
+      m_ang::Int64
+   )::Matrix{Float64}
+   
+   yv, wv = FGQ.gausslegendre(ny) 
+
+   nl   = num_l(ny) 
+   lmin = max(abs(spin), abs(spin-1), abs(m_ang))
+
+   lower = zeros(Float64,ny,ny)
+
+   for (i,yi) in enumerate(yv)
+      for (j,yj) in enumerate(yv) 
+
+         for k=1:nl
+            l = k-1+lmin 
+            lower[j,i] += ( 
+               -  
+               sqrt((l+spin)*(l-spin+1.0))
+               *
+               wv[j]*swal(spin,m_ang,l,yj)
+               *
+               swal(spin-1,m_ang,l,yi)
+              )
+         end
+      end
+   end
+
+   return lower 
 end
 
 """
@@ -238,7 +318,7 @@ function swal_filter_matrix(
       m_ang::Int64
    )::Matrix{Float64}
    
-   rv, wv = FGQ.gausslegendre(ny) 
+   yv, wv = FGQ.gausslegendre(ny) 
 
    nl = num_l(ny) 
 
@@ -250,8 +330,8 @@ function swal_filter_matrix(
       for i=1:ny
          for l=lmin:(nl-1+lmin)
             filter[j,i] += exp(-30.0*(l/(nl-1.0))^10)*(
-                           swal(spin,m_ang,l,rv[i])*
-                           swal(spin,m_ang,l,rv[j])
+                           swal(spin,m_ang,l,yv[i])*
+                           swal(spin,m_ang,l,yv[j])
                         )
          end
          filter[j,i] *= wv[j]

@@ -1,8 +1,10 @@
 module Evolution
 
+include("Fields.jl")
 include("Radial.jl")
 include("Sphere.jl")
 
+using  .Fields: Field
 import .Radial
 import .Sphere
 
@@ -164,8 +166,8 @@ end
 Fourth order Runge-Kutta evolution of psi4
 """
 function evolve_psi4(
-      psi4_f, 
-      psi4_p, 
+      psi4_f::Field, 
+      psi4_p::Field, 
       Evo::Evo_psi4,
       mi::Int64,
       dr::Float64,
