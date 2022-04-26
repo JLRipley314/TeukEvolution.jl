@@ -138,6 +138,7 @@ function launch(paramfile::String)
    ## Time evolution 
    ##===================
    println("Beginning evolution")
+ 
    for tc=1:nt
       Threads.@threads for mi=1:nm
          Evo.evolve_psi4(psi4_lin_f,psi4_lin_p,evo_psi4,mi,dr,dt) 

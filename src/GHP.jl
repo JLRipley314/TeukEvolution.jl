@@ -9,6 +9,8 @@ module GHP
 include("Fields.jl")
 using .Fields: Field
 
+export GHP_ops, set_edth!, set_edth_prime!, set_thorn!, set_thorn_prime!
+
 struct GHP_ops
 
    pre_edth_DT::Array{ComplexF64,2}
