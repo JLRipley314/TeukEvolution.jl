@@ -148,7 +148,7 @@ struct GHP_ops
    end
 end   
 
-function set_edth!(
+function set_edth!(;
       edth ::Array{ComplexF64,2},
       spin ::Int64, 
       boost::Int64, 
@@ -174,7 +174,7 @@ function set_edth!(
    return nothing
 end 
 
-function set_edth_prime!(
+function set_edth_prime!(;
       edth_prime::Array{ComplexF64,2},
       spin::Int64, 
       boost::Int64, 
@@ -200,7 +200,7 @@ function set_edth_prime!(
    return nothing
 end 
 
-function set_thorn!(
+function set_thorn!(;
       thorn::Array{ComplexF64,2},
       m_ang::Int64,
       spin ::Int64, 
@@ -236,7 +236,7 @@ end
 ##===========================================================================
 ## no rescaling in R for thorn prime
 ##===========================================================================
-function set_thorn_prime!(
+function set_thorn_prime!(;
       thorn_prime::Array{ComplexF64,2},
       falloff::Int64, 
       level::Array{ComplexF64,2}, 

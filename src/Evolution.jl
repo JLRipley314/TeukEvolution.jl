@@ -28,7 +28,7 @@ struct Evo_psi4
    S_lapl::Array{Float64,3}
    S_fltr::Array{Float64,3}
 
-   function Evo_psi4(
+   function Evo_psi4(;
          Rvals::Vector{Float64},
          Cvals::Vector{Float64},
          Svals::Vector{Float64},

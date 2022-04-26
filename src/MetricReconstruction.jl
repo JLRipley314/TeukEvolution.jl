@@ -8,10 +8,14 @@ For more details see
 """
 module MetricReconstruction
 
+include("./GHP.jl")
 include("./BackgroundNP.jl")
+
+using .Radial: set_d1! 
+using .GHP: GHP_ops 
 using .BackgroundNP: NP_0
   
-function k_psi3!(
+function set_psi3_k!(
       k,
       psi3,
       psi4,
@@ -33,7 +37,7 @@ function k_psi3!(
    return nothing
 end
 
-function k_lam!(
+function set_lam_k!(
       k,
       lam,
       psi4,
@@ -52,7 +56,7 @@ function k_lam!(
    return nothing
 end
 
-function k_psi2!(
+function set_psi2_k!(
       k,
       psi2,
       psi3,
@@ -74,7 +78,7 @@ function k_psi2!(
    return nothing
 end
 
-function k_hmbmb!(
+function set_hmbmb_k!(
       k,
       hmbmb,
       lam,
@@ -93,7 +97,7 @@ function k_hmbmb!(
    return nothing
 end
 
-function k_pi!(
+function set_pi_k!(
       k,
       lam,
       hmbmb,
@@ -119,7 +123,7 @@ function k_pi!(
    return nothing
 end
 
-function k_hlmb!(
+function set_hlmb_k!(
       k,
       lam,
       hmbmb,
@@ -141,11 +145,19 @@ function k_hlmb!(
    return nothing
 end
 
-function k_muhll!(
+function set_muhll_k!(
       k,
-      lam,
-      hmbmb,
-      psi3,
+      muhll,
+      hlmb_edth,
+      hlmb,
+      pi_edth,
+      pi_l,
+      psi2,
+      pi_nm,
+      hmbmb_edth_nm,
+      hmbmb_nm,
+      hlmb_edth_nm,
+      hlmb_nm
       R::Vector{Float64},
       NP::NP_0
    )
@@ -161,7 +173,6 @@ function k_muhll!(
                                            +  
                                            2.0*NP.tau_0[i,j] 
                                           )*hlmb[i,j]
-         
                     -  
                     2.0*pi_edth[i,j] 
                     -  
@@ -190,11 +201,13 @@ function k_muhll!(
    return nothing
 end
 
-function set_k(
-      kp,
+function set_k!(
+      k,
       level,
-      DR
-      )
+      DR,
+      dr::Float64
+     )
+   set_d1!(DR,level,dr)
 
    for j=1:ny
       for i=1:nx
@@ -207,6 +220,114 @@ function set_k(
                       )
       end
    end
+   return nothing
+end
+
+function set_metric_recon_k!(;
+      psi4_f ::Field,
+      psi3_f ::Field,
+      psi2_f ::Field,
+      lam_f  ::Field,
+      pi_f   ::Field,
+      hmbmb_f::Field,
+      hlmb_f ::Field,
+      muhll_f::Field,
+      m_ang::Int64,
+      dr::Float64,
+      R::Vector{Float64},
+      Op::GHP_ops,
+      NP::NP_0
+     )
+   psi4        = @view psi4_f.tmp[   :,:,m_ang] 
+   psi4_k      = @view psi4_f.k[     :,:,m_ang] 
+   psi4_raised = @view psi4_f.raised[:,:,m_ang] 
+   psi4_edth   = @view psi4_f.edth[  :,:,m_ang] 
+
+   psi3        = @view psi3_f.tmp[   :,:,m_ang] 
+   psi3_k      = @view psi3_f.k[     :,:,m_ang] 
+   psi3_raised = @view psi3_f.raised[:,:,m_ang] 
+   psi3_edth   = @view psi3_f.edth[  :,:,m_ang] 
+   psi3_DR     = @view psi3_f.rad_d1[:,:,m_ang] 
+
+   psi2        = @view psi2_f.tmp[   :,:,m_ang] 
+   psi2_k      = @view psi2_f.k[     :,:,m_ang] 
+   psi2_dr     = @view psi2_f.rad_d1[:,:,m_ang] 
+
+   lam        = @view lam_f.tmp[   :,:,m_ang] 
+   lam_k      = @view lam_f.k[     :,:,m_ang] 
+   lam_DR     = @view lam_f.rad_d1[:,:,m_ang] 
+
+   pi_nm     = @view pi_f.tmp[   :,:,-m_ang]  
+   pi_l      = @view pi_f.tmp[   :,:, m_ang] 
+   pi_k      = @view pi_f.k[     :,:, m_ang] 
+   pi_DR     = @view pi_f.rad_d1[:,:, m_ang] 
+   pi_raised = @view pi_f.raised[:,:, m_ang] 
+   pi_edth   = @view pi_f.edth[  :,:, m_ang] 
+
+   hmbmb        = @view hmbmb_f.tmp[   :,:,m_ang] 
+   hmbmb_k      = @view hmbmb_f.k[     :,:,m_ang] 
+   hmbmb_DR     = @view hmbmb_f.rad_d1[:,:,m_ang] 
+
+   hmbmb_nm        = @view hmbmb_f.tmp[:,:,-m_ang] 
+   hmbmb_k_nm      = @view hmbmb_f.k[  :,:,-m_ang] 
+   hmbmb_raised_nm = @view hmbmb_f.tmp[:,:,-m_ang] 
+   hmbmb_edth_nm   = @view hmbmb_f.tmp[:,:,-m_ang] 
+
+   hlmb        = @view hlmb_f.tmp[   :,:,m_ang] 
+   hlmb_k      = @view hlmb_f.k[     :,:,m_ang] 
+   hlmb_DR     = @view hlmb_f.rad_d1[:,:,m_ang] 
+   hlmb_raised = @view hlmb_f.raised[:,:,m_ang] 
+   hlmb_edth   = @view hlmb_f.edth[  :,:,m_ang] 
+
+   hlmb_nm        = @view hlmb_f.tmp[:,:,-m_ang] 
+   hlmb_k_nm      = @view hlmb_f.k[  :,:,-m_ang] 
+   hlmb_raised_nm = @view hlmb_f.tmp[:,:,-m_ang] 
+   hlmb_edth_nm   = @view hlmb_f.tmp[:,:,-m_ang] 
+
+   muhll        = @view muhll_f.tmp[   :,:,m_ang] 
+   muhll_k      = @view muhll_f.k[     :,:,m_ang] 
+   muhll_DR     = @view muhll_f.rad_d1[:,:,m_ang] 
+
+   ##===============
+   GHP.set_edth!(edth=psi4_edth,spin=psi4_f.spin,boost=psi4_f.boost,level=psi4,DT=psi4_k,raised=psi4_raised,Op=Op) 
+
+   set_psi3_k!(psi3_k, psi3, psi4, psi4_edth, R, NP)
+   set_k!(psi3_k, psi3, psi3_DR, dr)
+   
+   ##===============
+   set_lam_k!(lam_k, lam, psi4, R, NP)
+   set_k!(lam_k, lam, lam_DR, dr)
+   
+   ##===============
+   GHP.set_edth!(edth=psi3_edth,spin=psi3_f.spin,boost=psi3_f.boost,level=psi3,DT=psi3_k,raised=psi3_raised,Op=Op) 
+   
+   set_psi2_k!(psi2_k, psi2, psi3, psi3_edth, R, NP)
+   set_k!(psi2_k, psi2, psi2_DR, dr)
+   
+   ##===============
+   set_hmbmb_k!(hmbmb_k, hmbmb, lam, R, NP)
+   set_k!(hmbmb_k, hmbmb, hmbmb_DR, dr)
+   
+   ##===============
+   set_pi_k!(pi_k, lam, hmbmb, psi3, R, NP)
+   set_k!(pi_k, pi_l, hmbmb_DR, dr)
+   
+   ##===============
+   set_hlmb_k!(hlmb_k, lam, hmbmb, psi3, R, NP)
+   set_k!(hlmb_k, hlmb, hmbmb_DR, dr)
+   
+   ##===============
+   GHP.set_edth!(edth=hlmb_edth,        spin=hlmb_f.spin, boost=hlmb_f.boost, level=hlmb,        DT=hlmb_k,        raised=hlmb_raised,        Op=Op) 
+   GHP.set_edth!(edth=pi_edth,          spin=pi_f.spin,   boost=pi_f.boost,   level=pi_l,        DT=pi_k,          raised=pi_raised,          Op=Op) 
+   GHP.set_edth!(edth=hmbmb_edth_nm,    spin=hmbmb_f.spin,boost=hmbmb_f.boost,level=hmbmb_nm,    DT=hmbmb_k_nm,    raised=hmbmb_raised_nm,    Op=Op) 
+   GHP.set_edth!(edth=hlmb_edth_edth_nm,spin=hlmb_f.spin, boost=hlmb.boost,   level=hlmb_edth_nm,DT=hlmb_edth_k_nm,raised=hlmb_edth_raised_nm,Op=Op) 
+   
+   set_muhll_k!(muhll_k, muhll, hlmb_edth, hlmb, pi_edth, pi_l, psi2,
+                pi_nm, hmbmb_edth_nm, hmbmb_nm, hlmb_edth_nm, hlmb_nm
+                R, NP
+               )
+   set_k!(muhll_k, muhll, muhll_DR, dr)
+   
    return nothing
 end
 

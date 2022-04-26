@@ -26,6 +26,11 @@ struct Field
    lowered::Array{ComplexF64,3}  
    sph_lap::Array{ComplexF64,3} 
 
+   edth       ::Array{ComplexF64,3}
+   edth_prime ::Array{ComplexF64,3}
+   thorn      ::Array{ComplexF64,3}
+   thorn_prime::Array{ComplexF64,3}
+
    Field(;
          name, 
          spin, boost, falloff, 
@@ -33,15 +38,19 @@ struct Field
         ) = new(name, 
                 spin, boost, falloff,
                 nx, ny, nz, 
-                zeros(nx,ny,nz),
-                zeros(nx,ny,nz),
-                zeros(nx,ny,nz),
-                zeros(nx,ny,nz),
-                zeros(nx,ny,nz),
-                zeros(nx,ny,nz),
-                zeros(nx,ny,nz),
-                zeros(nx,ny,nz),
-                zeros(nx,ny,nz)
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz),
+                zeros(ComplexF64,nx,ny,nz)
                )
 end
 
