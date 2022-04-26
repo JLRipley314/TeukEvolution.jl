@@ -6,6 +6,7 @@ include("Radial.jl")
 include("Sphere.jl")
 include("Id.jl")
 include("Evolution.jl")
+include("GHP.jl")
 
 using .Fields: Field
 import .Io
@@ -13,6 +14,8 @@ import .Radial
 import .Sphere
 import .Id
 import .Evolution as Evo
+import .GHP
+
 import TOML
 
 #import MPI
@@ -69,12 +72,41 @@ function launch(paramfile::String)
    Mv = params["m_vals"]
    time = 0.0
 
-   println("Initializing dynamical fields")
-   psi4_f = Field("psi4_f",psi_spin,psi_spin,psi_falloff,nx,ny,nm)
-   psi4_p = Field("psi4_p",psi_spin,psi_spin,psi_falloff,nx,ny,nm)
+   ##=================
+   ## Dynamical fields 
+   ##=================
+   println("Initializing linear psi4")
+   psi4_lin_f = Field(name="psi4_lin_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,nx=nx,ny=ny,nz=nm)
+   psi4_lin_p = Field(name="psi4_lin_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,nx=nx,ny=ny,nz=nm)
    
-   println("Initializing psi4 evolution fields")
-   evo_psi4 = Evo.Evo_psi4(Rv,Cv,Sv,Mv,bhm,bhs,cl,psi_spin)
+   println("Initializing metric reconstruction fields")
+   psi3_f = Field(name="psi3",spin=-1,boost=-1,falloff=2,nx=nx,ny=ny,nz=nm)
+   psi2_f = Field(name="psi2",spin= 0,boost= 0,falloff=3,nx=nx,ny=ny,nz=nm)
+
+   la_f   = Field(name="la",spin=-2,boost=-1,falloff=1,nx=nx,ny=ny,nz=nm)
+   pi_f   = Field(name="pi",spin=-1,boost= 0,falloff=2,nx=nx,ny=ny,nz=nm)
+
+   muhll_f = Field(name="muhll",spin= 0,boost=1,falloff=3,nx=nx,ny=ny,nz=nm)
+   hlmb_f  = Field(name="hlmb" ,spin=-1,boost=1,falloff=2,nx=nx,ny=ny,nz=nm)
+   hmbmb_f = Field(name="hmbmb",spin=-2,boost=0,falloff=1,nx=nx,ny=ny,nz=nm)
+  
+   println("Initializing independent residuals")
+   res_bianchi3_f = Field(name="res_bianchi3",spin=-2,boost=-1,falloff=2,nx=nx,ny=ny,nz=nm)
+   res_bianchi2_f = Field(name="res_bianchi2",spin=-1,boost= 0,falloff=2,nx=nx,ny=ny,nz=nm)
+   res_hll_f      = Field(name="res_hll",     spin= 0,boost= 2,falloff=2,nx=nx,ny=ny,nz=nm)
+  
+   println("Initializing 2nd order psi4")
+   psi4_scd_f = Field(name="psi4_scd_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,nx=nx,ny=ny,nz=nm)
+   psi4_scd_p = Field(name="psi4_scd_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,nx=nx,ny=ny,nz=nm)
+   
+   ##=======================================
+   ## Fixed fields (for evolution equations) 
+   ##=======================================
+   println("Initializing psi4 evolution operators")
+   evo_psi4 = Evo.Evo_psi4(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl,spin=psi_spin)
+   
+   println("Initializing GHP operators")
+   ghp = GHP.GHP_ops(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl)
    ##=============
    ## Initial data
    ##=============
@@ -82,7 +114,7 @@ function launch(paramfile::String)
  
    if params["id_kind"]=="gaussian"
       for mi=1:nm
-         Id.set_gaussian!(psi4_f, psi4_p, 
+         Id.set_gaussian!(psi4_lin_f, psi4_lin_p, 
             psi_spin,
             mi,
             Mv[mi],
@@ -93,8 +125,8 @@ function launch(paramfile::String)
             params["id_amp"][mi][1] + params["id_amp"][mi][2]*im,
             cl, Rv, Yv
          )
-         Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_f)
-         #Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_p)
+         Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_lin_f)
+         #Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_lin_p)
       end
    elseif params["id_kind"]=="qnm"
       Id.set_qnm!()
@@ -108,12 +140,12 @@ function launch(paramfile::String)
    println("Beginning evolution")
    for tc=1:nt
       Threads.@threads for mi=1:nm
-         Evo.evolve_psi4(psi4_f,psi4_p,evo_psi4,mi,dr,dt) 
+         Evo.evolve_psi4(psi4_lin_f,psi4_lin_p,evo_psi4,mi,dr,dt) 
          
          for j=1:ny
             for i=1:nx
-               psi4_f.n[i,j,mi] = psi4_f.np1[i,j,mi] 
-               psi4_p.n[i,j,mi] = psi4_p.np1[i,j,mi] 
+               psi4_lin_f.n[i,j,mi] = psi4_lin_f.np1[i,j,mi] 
+               psi4_lin_p.n[i,j,mi] = psi4_lin_p.np1[i,j,mi] 
             end
          end
       end
@@ -121,8 +153,8 @@ function launch(paramfile::String)
       if tc%ts==0
          println("time/bhm ", tc*dt/bhm)
          Threads.@threads for mi=1:nm
-            Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_f)
-            #Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_p)
+            Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_lin_f)
+            #Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_lin_p)
          end 
       end
    end

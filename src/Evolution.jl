@@ -28,7 +28,7 @@ struct Evo_psi4
    S_lapl::Array{Float64,3}
    S_fltr::Array{Float64,3}
 
-   function Evo_psi4(
+   function Evo_psi4(;
          Rvals::Vector{Float64},
          Cvals::Vector{Float64},
          Svals::Vector{Float64},
@@ -166,8 +166,8 @@ end
 Fourth order Runge-Kutta evolution of psi4
 """
 function evolve_psi4(
-      psi4_f::Field, 
-      psi4_p::Field, 
+      psi4_f, 
+      psi4_p, 
       Evo::Evo_psi4,
       mi::Int64,
       dr::Float64,

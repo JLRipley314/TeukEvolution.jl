@@ -8,7 +8,7 @@ module Sphere
 import FastGaussQuadrature as FGQ
 import Jacobi: jacobi
 
-export Y_vals, cos_vals, sin_vals, swal, swal_laplacian_matrix, swal_filter_matrix, angular_matrix_mult!
+export Y_vals, cos_vals, sin_vals, swal, swal_laplacian_matrix, swal_raising_matrix, swal_lowering_matrix, swal_filter_matrix, angular_matrix_mult!
 
 function convertBF(v)
    return return v#parse(Float64,"$v")

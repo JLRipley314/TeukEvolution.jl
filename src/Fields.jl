@@ -26,7 +26,8 @@ struct Field
    lowered::Array{ComplexF64,3}  
    sph_lap::Array{ComplexF64,3} 
 
-   Field(name, 
+   Field(;
+         name, 
          spin, boost, falloff, 
          nx, ny, nz,
         ) = new(name, 
