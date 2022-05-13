@@ -65,3 +65,5 @@ struct NP_0
       return new(mu_0,tau_0,pi_0,rho_0,eps_0,psi2_0)
    end
 end
+
+end
