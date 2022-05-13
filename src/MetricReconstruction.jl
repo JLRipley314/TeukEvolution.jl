@@ -157,7 +157,7 @@ function set_muhll_k!(
       hmbmb_edth_nm,
       hmbmb_nm,
       hlmb_edth_nm,
-      hlmb_nm
+      hlmb_nm,
       R::Vector{Float64},
       NP::NP_0
    )
