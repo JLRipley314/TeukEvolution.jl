@@ -3,17 +3,22 @@ module Evolution
 include("Fields.jl")
 include("Radial.jl")
 include("Sphere.jl")
+include("BackgroundNP.jl")
+include("GHP.jl")
+include("MetricReconstruction.jl")
 
 using  .Fields: Field
 import .Radial
 import .Sphere
+import .BackgroundNP: NP_0 
+import .GHP: GHP_ops
+import .MetricReconstruction
 
 const half  = 1.0/2.0
 const third = 1.0/3.0
 const sixth = 1.0/6.0
 
 export Evo_psi4, evolve_psi4
-
 
 """
    Struct for the evolution matrices for psi4
@@ -129,6 +134,7 @@ struct Evo_psi4
       return new(A_pp,A_pq,B_pp,B_pq,B_pf,S_lapl,S_fltr) 
    end
 end
+
 """
 set_kp
 """
@@ -162,6 +168,7 @@ function set_kp(
    end
    return nothing
 end
+
 """
 Fourth order Runge-Kutta evolution of psi4
 """

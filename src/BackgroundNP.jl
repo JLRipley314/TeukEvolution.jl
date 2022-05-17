@@ -13,14 +13,15 @@ struct NP_0
    
    function NP_0(;
          Rvals::Vector{Float64},
+         Yvals::Vector{Float64},
          Cvals::Vector{Float64},
          Svals::Vector{Float64},
          bhm::Float64,
          bhs::Float64,
          cl::Float64) 
     
-      nx = len(Rvals)
-      ny = len(Yvals)
+      nx = length(Rvals)
+      ny = length(Yvals)
    
       mu_0   = zeros(ComplexF64,nx,ny) 
       tau_0  = zeros(ComplexF64,nx,ny)  

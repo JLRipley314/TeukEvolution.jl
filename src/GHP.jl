@@ -24,13 +24,13 @@ struct GHP_ops
 
    pre_edth_DT::Array{ComplexF64,2}
    pre_edth_raised::Array{ComplexF64,2}
-   pre_edth_level::Array{ComplexF64,2}
+   pre_edth::Array{ComplexF64,2}
    pre_edth_prime_DT::Array{ComplexF64,2}
    pre_edth_prime_lowered::Array{ComplexF64,2}
-   pre_edth_prime_level::Array{ComplexF64,2}
+   pre_edth_prime::Array{ComplexF64,2}
    pre_thorn_DT::Array{ComplexF64,2}
    pre_thorn_DR::Array{ComplexF64,2}
-   pre_thorn_level::Array{ComplexF64,2}
+   pre_thorn::Array{ComplexF64,2}
    pre_thorn_prime_DT::Array{ComplexF64,2}
    pre_thorn_prime_DR::Array{ComplexF64,2} 
 
@@ -56,18 +56,21 @@ struct GHP_ops
 
       pre_edth_DT            = zeros(ComplexF64,nx,ny)
       pre_edth_raised        = zeros(ComplexF64,nx,ny) 
-      pre_edth_level         = zeros(ComplexF64,nx,ny) 
+      pre_edth               = zeros(ComplexF64,nx,ny) 
       pre_edth_prime_DT      = zeros(ComplexF64,nx,ny) 
       pre_edth_prime_lowered = zeros(ComplexF64,nx,ny) 
-      pre_edth_prime_level   = zeros(ComplexF64,nx,ny) 
+      pre_edth_prime         = zeros(ComplexF64,nx,ny) 
       pre_thorn_DT           = zeros(ComplexF64,nx,ny) 
       pre_thorn_DR           = zeros(ComplexF64,nx,ny) 
-      pre_thorn_level        = zeros(ComplexF64,nx,ny) 
+      pre_thorn              = zeros(ComplexF64,nx,ny) 
       pre_thorn_prime_DT     = zeros(ComplexF64,nx,ny) 
       pre_thorn_prime_DR     = zeros(ComplexF64,nx,ny) 
   
       raise = zeros(ComplexF64,ny,ny,length(Mvals),length(spins))
       lower = zeros(ComplexF64,ny,ny,length(Mvals),length(spins))
+
+      smap = Dict{Int64,Int64}()
+      mmap = Dict{Int64,Int64}()
 
       for j=1:ny
          cy = Cvals[j]
@@ -89,7 +92,7 @@ struct GHP_ops
                                     im*bhs*R*cy)
                                    )
 
-            pre_edth_level[i,j] = (
+            pre_edth[i,j] = (
                   (im*bhs*R*sy/sqrt(2.0))
                   /  
                   ((im*(cl^2) + bhs*R*cy)^2)
@@ -110,7 +113,7 @@ struct GHP_ops
                                              im*bhs*R*cy)
                                             )
 
-            pre_edth_prime_level[i,j] = (
+            pre_edth_prime[i,j] = (
                   (im*bhs*R*sy/sqrt(2.0))
                   /  
                   ((cl^2 + im*bhs*R*cy)^2)
@@ -137,7 +140,7 @@ struct GHP_ops
             ##=================
             ## NOT divided by R
             ##=================
-            pre_thorn_level[i,j] = (
+            pre_thorn[i,j] = (
                (1.0/((cl^4)+((bhs*R*cy)^2)))*R*(im*bhs)
               )
             
@@ -172,13 +175,13 @@ struct GHP_ops
       return new(
          pre_edth_DT,
          pre_edth_raised, 
-         pre_edth_level,
+         pre_edth,
          pre_edth_prime_DT, 
          pre_edth_prime_lowered, 
-         pre_edth_prime_level, 
+         pre_edth_prime, 
          pre_thorn_DT, 
          pre_thorn_DR, 
-         pre_thorn_level, 
+         pre_thorn, 
          pre_thorn_prime_DT, 
          pre_thorn_prime_DR,
          raise,
@@ -194,7 +197,7 @@ function set_edth!(;
       spin ::Int64, 
       m_ang::Int64, 
       boost::Int64, 
-      level ::Array{ComplexF64,2}, 
+      f     ::Array{ComplexF64,2}, 
       DT    ::Array{ComplexF64,2}, 
       raised::Array{ComplexF64,2},
       Op::GHP_ops
@@ -202,7 +205,7 @@ function set_edth!(;
    nx, ny = size(edth)
    p = (spin+boost)
    
-   angular_matrix_mult!(raised,level,@view Op.raise[:,:,Op.mmap[m_ang],Op.smap[spin]])
+   angular_matrix_mult!(raised,f,@view Op.raise[:,:,Op.mmap[m_ang],Op.smap[spin]])
    
    for j=1:ny
       for i=1:nx
@@ -211,7 +214,7 @@ function set_edth!(;
             +  
             Op.pre_edth_raised[i,j] *raised[i,j]
             +  
-            p*Op.pre_edth_level[i,j]*level[i,j]
+            p*Op.pre_edth[i,j]*f[i,j]
         )
       end
    end
@@ -223,7 +226,7 @@ function set_edth_prime!(;
       spin ::Int64, 
       m_ang::Int64, 
       boost::Int64, 
-      level  ::Array{ComplexF64,2},
+      f      ::Array{ComplexF64,2},
       DT     ::Array{ComplexF64,2}, 
       lowered::Array{ComplexF64,2},
       Op::GHP_ops
@@ -231,7 +234,7 @@ function set_edth_prime!(;
    nx, ny = size(edth)
    q = (-spin+boost)
 
-   angular_matrix_mult!(lowered,level,@view Op.lower[:,:,Op.mmap[m_ang],Op.smap[spin]]) 
+   angular_matrix_mult!(lowered,f,@view Op.lower[:,:,Op.mmap[m_ang],Op.smap[spin]]) 
 
    for j=1:ny
       for i=1:nx
@@ -240,7 +243,7 @@ function set_edth_prime!(;
             +  
             Op.pre_edth_prime_lowered[i,j]*lowered[i,j]
             +  
-            q*Op.pre_edth_prime_level[i,j]*level[i,j]
+            q*Op.pre_edth_prime[i,j]*f[i,j]
            )
       end
    end
@@ -253,7 +256,7 @@ function set_thorn!(;
       m_ang::Int64,
       boost::Int64, 
       falloff::Int64, 
-      level::Array{ComplexF64,2}, 
+      f    ::Array{ComplexF64,2}, 
       DT   ::Array{ComplexF64,2}, 
       DR   ::Array{ComplexF64,2},
       ep_0 ::Array{ComplexF64,2},
@@ -269,11 +272,11 @@ function set_thorn!(;
          thorn[i,j] = (
             Op.pre_thorn_DT[i,j]*DT[i,j]
             +  
-            Op.pre_thorn_DR[i,j]*(R[i]*DR[i,j] + falloff*level[i,j])
+            Op.pre_thorn_DR[i,j]*(R[i]*DR[i,j] + falloff*f[i,j])
             +  
-            m_ang*Op.pre_thorn_level[i,j]*level[i,j]
+            m_ang*Op.pre_thorn[i,j]*f[i,j]
             -  
-            R[i]*(p*ep_0[i,j] + q*conj(ep_0[i,j]))*level[i,j]
+            R[i]*(p*ep_0[i,j] + q*conj(ep_0[i,j]))*f[i,j]
            )
       end
    end
@@ -286,10 +289,10 @@ end
 function set_thorn_prime!(;
       thorn_prime::Array{ComplexF64,2},
       falloff::Int64, 
-      level::Array{ComplexF64,2}, 
-      DT   ::Array{ComplexF64,2}, 
-      DR   ::Array{ComplexF64,2}, 
-      R    ::Vector{Float64},
+      f ::Array{ComplexF64,2}, 
+      DT::Array{ComplexF64,2}, 
+      DR::Array{ComplexF64,2}, 
+      R ::Vector{Float64},
       Op::GHP_ops
      )
    for j=1:ny
@@ -297,7 +300,7 @@ function set_thorn_prime!(;
          thorn_prime_arr[i,j] = (
             Op.pre_thorn_prime_DT[i,j]*DT[i,j]
             +  
-            Op.pre_thorn_prime_DR[i,j]*(R[i]*DR[i,j] + falloff*level[i,j])
+            Op.pre_thorn_prime_DR[i,j]*(R[i]*DR[i,j] + falloff*f[i,j])
            )
       end
    end

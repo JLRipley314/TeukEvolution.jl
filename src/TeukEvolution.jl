@@ -7,6 +7,7 @@ include("Sphere.jl")
 include("Id.jl")
 include("Evolution.jl")
 include("GHP.jl")
+include("BackgroundNP.jl")
 
 using .Fields: Field
 import .Io
@@ -15,6 +16,7 @@ import .Sphere
 import .Id
 import .Evolution as Evo
 import .GHP
+import .BackgroundNP
 
 import TOML
 
@@ -107,6 +109,9 @@ function launch(paramfile::String)
    
    println("Initializing GHP operators")
    ghp = GHP.GHP_ops(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl)
+   
+   println("Initializing Background NP operators")
+   bkgrd_np = BackgroundNP.NP_0(Rvals=Rv,Yvals=Yv,Cvals=Cv,Svals=Sv,bhm=bhm,bhs=bhs,cl=cl)
    ##=============
    ## Initial data
    ##=============
