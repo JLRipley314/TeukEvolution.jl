@@ -9,13 +9,13 @@ include("Evolution.jl")
 include("GHP.jl")
 include("BackgroundNP.jl")
 
-using .Fields: Field
+using .Fields: Field, Initialize_Field
 import .Io
 import .Radial
 import .Sphere
 import .Id
-import .Evolution as Evo
-import .GHP
+using .Evolution: Evo_psi4, Initialize_Evo_psi4, Evolve_psi4!
+using .GHP: GHP_ops, Initialize_GHP_ops 
 import .BackgroundNP
 
 import TOML
@@ -78,37 +78,37 @@ function launch(paramfile::String)
    ## Dynamical fields 
    ##=================
    println("Initializing linear psi4")
-   psi4_lin_f = Field(name="psi4_lin_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,nx=nx,ny=ny,nz=nm)
-   psi4_lin_p = Field(name="psi4_lin_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,nx=nx,ny=ny,nz=nm)
+   psi4_lin_f = Initialize_Field(name="psi4_lin_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
+   psi4_lin_p = Initialize_Field(name="psi4_lin_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
    
    println("Initializing metric reconstruction fields")
-   psi3_f = Field(name="psi3",spin=-1,boost=-1,falloff=2,nx=nx,ny=ny,nz=nm)
-   psi2_f = Field(name="psi2",spin= 0,boost= 0,falloff=3,nx=nx,ny=ny,nz=nm)
+   psi3_f = Initialize_Field(name="psi3",spin=-1,boost=-1,falloff=2,Mvals=Mv,nx=nx,ny=ny)
+   psi2_f = Initialize_Field(name="psi2",spin= 0,boost= 0,falloff=3,Mvals=Mv,nx=nx,ny=ny)
 
-   la_f   = Field(name="la",spin=-2,boost=-1,falloff=1,nx=nx,ny=ny,nz=nm)
-   pi_f   = Field(name="pi",spin=-1,boost= 0,falloff=2,nx=nx,ny=ny,nz=nm)
+   la_f = Initialize_Field(name="la",spin=-2,boost=-1,falloff=1,Mvals=Mv,nx=nx,ny=ny)
+   pi_f = Initialize_Field(name="pi",spin=-1,boost= 0,falloff=2,Mvals=Mv,nx=nx,ny=ny)
 
-   muhll_f = Field(name="muhll",spin= 0,boost=1,falloff=3,nx=nx,ny=ny,nz=nm)
-   hlmb_f  = Field(name="hlmb" ,spin=-1,boost=1,falloff=2,nx=nx,ny=ny,nz=nm)
-   hmbmb_f = Field(name="hmbmb",spin=-2,boost=0,falloff=1,nx=nx,ny=ny,nz=nm)
+   muhll_f = Initialize_Field(name="muhll",spin= 0,boost=1,falloff=3,Mvals=Mv,nx=nx,ny=ny)
+   hlmb_f  = Initialize_Field(name="hlmb" ,spin=-1,boost=1,falloff=2,Mvals=Mv,nx=nx,ny=ny)
+   hmbmb_f = Initialize_Field(name="hmbmb",spin=-2,boost=0,falloff=1,Mvals=Mv,nx=nx,ny=ny)
   
    println("Initializing independent residuals")
-   res_bianchi3_f = Field(name="res_bianchi3",spin=-2,boost=-1,falloff=2,nx=nx,ny=ny,nz=nm)
-   res_bianchi2_f = Field(name="res_bianchi2",spin=-1,boost= 0,falloff=2,nx=nx,ny=ny,nz=nm)
-   res_hll_f      = Field(name="res_hll",     spin= 0,boost= 2,falloff=2,nx=nx,ny=ny,nz=nm)
+   res_bianchi3_f = Initialize_Field(name="res_bianchi3",spin=-2,boost=-1,falloff=2,Mvals=Mv,nx=nx,ny=ny)
+   res_bianchi2_f = Initialize_Field(name="res_bianchi2",spin=-1,boost= 0,falloff=2,Mvals=Mv,nx=nx,ny=ny)
+   res_hll_f      = Initialize_Field(name="res_hll",     spin= 0,boost= 2,falloff=2,Mvals=Mv,nx=nx,ny=ny)
   
    println("Initializing 2nd order psi4")
-   psi4_scd_f = Field(name="psi4_scd_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,nx=nx,ny=ny,nz=nm)
-   psi4_scd_p = Field(name="psi4_scd_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,nx=nx,ny=ny,nz=nm)
+   psi4_scd_f = Initialize_Field(name="psi4_scd_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
+   psi4_scd_p = Initialize_Field(name="psi4_scd_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
    
    ##=======================================
    ## Fixed fields (for evolution equations) 
    ##=======================================
    println("Initializing psi4 evolution operators")
-   evo_psi4 = Evo.Evo_psi4(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl,spin=psi_spin)
+   evo_psi4 = Initialize_Evo_psi4(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl,spin=psi_spin)
    
    println("Initializing GHP operators")
-   ghp = GHP.GHP_ops(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl)
+   ghp = Initialize_GHP_ops(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl)
    
    println("Initializing Background NP operators")
    bkgrd_np = BackgroundNP.NP_0(Rvals=Rv,Yvals=Yv,Cvals=Cv,Svals=Sv,bhm=bhm,bhs=bhs,cl=cl)
@@ -118,11 +118,10 @@ function launch(paramfile::String)
    println("Initial data")
  
    if params["id_kind"]=="gaussian"
-      for mi=1:nm
-         Id.set_gaussian!(psi4_lin_f, psi4_lin_p, 
+      for (mi,mv) in enumerate(Mv) 
+         Id.set_gaussian!(psi4_lin_f[mv], psi4_lin_p[mv], 
             psi_spin,
-            mi,
-            Mv[mi],
+            mv,
             params["id_l_ang"][mi],
             params["id_ru"][mi], 
             params["id_rl"][mi], 
@@ -130,8 +129,7 @@ function launch(paramfile::String)
             params["id_amp"][mi][1] + params["id_amp"][mi][2]*im,
             cl, Rv, Yv
          )
-         Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_lin_f)
-         #Io.save_csv(0,mi,Mv[mi],Rv,Yv,outdir,psi4_lin_p)
+         Io.save_csv(tc=0,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=psi4_lin_f[mv])
       end
    elseif params["id_kind"]=="qnm"
       Id.set_qnm!()
@@ -145,22 +143,26 @@ function launch(paramfile::String)
    println("Beginning evolution")
  
    for tc=1:nt
-      Threads.@threads for mi=1:nm
-         Evo.evolve_psi4(psi4_lin_f,psi4_lin_p,evo_psi4,mi,dr,dt) 
+      Threads.@threads for mv in Mv
+         Evolve_psi4!(psi4_lin_f[mv],psi4_lin_p[mv],evo_psi4[mv],dr,dt) 
+        
+         lin_f_n   = psi4_lin_f[mv].n
+         lin_p_n   = psi4_lin_p[mv].n
+         lin_f_np1 = psi4_lin_f[mv].np1
+         lin_p_np1 = psi4_lin_p[mv].np1
          
          for j=1:ny
             for i=1:nx
-               psi4_lin_f.n[i,j,mi] = psi4_lin_f.np1[i,j,mi] 
-               psi4_lin_p.n[i,j,mi] = psi4_lin_p.np1[i,j,mi] 
+               lin_f_n[i,j] = lin_f_np1[i,j] 
+               lin_p_n[i,j] = lin_p_np1[i,j] 
             end
          end
       end
       
       if tc%ts==0
          println("time/bhm ", tc*dt/bhm)
-         Threads.@threads for mi=1:nm
-            Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_lin_f)
-            #Io.save_csv(tc,mi,Mv[mi],Rv,Yv,outdir,psi4_lin_p)
+         Threads.@threads for mv in Mv 
+            Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=psi4_lin_f[mv])
          end 
       end
    end

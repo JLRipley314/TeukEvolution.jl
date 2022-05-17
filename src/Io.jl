@@ -4,20 +4,12 @@ export save_csv
 
 """
 Save the real and imaginary parts of level np1
-
-save_csv(
-   tc::Int64,
-   mi::Int64,
-   mv::Int64,
-   f
-   )
 """
-function save_csv(
+function save_csv(;
       tc::Int64,
-      mi::Int64,
       mv::Int64,
-      rv::Vector{Float64},
-      yv::Vector{Float64},
+      Rv::Vector{Float64},
+      Yv::Vector{Float64},
       outdir::String,
       f)
       
@@ -27,8 +19,8 @@ function save_csv(
       write(out,"R,Y,val\n")
       for i=1:nx
          for j=1:ny
-            if abs(f.np1[i,j,mi].re)>1e-16
-               write(out,"$(rv[i]),$(yv[j]),$(f.np1[i,j,mi].re)\n")
+            if abs(f.np1[i,j].re)>1e-16
+               write(out,"$(Rv[i]),$(Yv[j]),$(f.np1[i,j].re)\n")
             end
          end
       end
@@ -38,8 +30,8 @@ function save_csv(
       write(out,"R,Y,val\n")
       for i=1:nx
          for j=1:ny
-            if abs(f.np1[i,j,mi].im)>1e-16
-               write(out,"$(rv[i]),$(yv[j]),$(f.np1[i,j,mi].im)\n")
+            if abs(f.np1[i,j].im)>1e-16
+               write(out,"$(Rv[i]),$(Yv[j]),$(f.np1[i,j].im)\n")
             end
          end
       end

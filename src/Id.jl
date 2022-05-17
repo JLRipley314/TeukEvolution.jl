@@ -15,7 +15,6 @@ function set_gaussian(
       f,
       p,
       spin::Int64,
-      mi::Int64,
       mv::Int64,
       l_ang::Int64,
       ru::Float64, 
@@ -31,7 +30,6 @@ function set_gaussian!(
       f,
       p,
       spin::Int64,
-      mi::Int64,
       mv::Int64,
       l_ang::Int64,
       ru::Float64, 
@@ -42,6 +40,8 @@ function set_gaussian!(
       Rv::Vector{Float64},
       Yv::Vector{Float64}
    )
+   @assert f.mv == mv
+   @assert p.mv == mv
 
    nx, ny = f.nx, f.ny
 
@@ -56,12 +56,12 @@ function set_gaussian!(
             bump = exp(-1.0*width/(r-rl))*exp(-2.0*width/(ru-r))
          end
 
-         f.n[i,j,mi]  = (((r-rl)/width)^2) * (((ru-r)/width)^2) * bump
-         f.n[i,j,mi] *= swal(spin,mv,l_ang,Yv[j])
+         f.n[i,j]  = (((r-rl)/width)^2) * (((ru-r)/width)^2) * bump
+         f.n[i,j] *= swal(spin,mv,l_ang,Yv[j])
 
-         p.n[i,j,mi] = 0.0
+         p.n[i,j] = 0.0
 
-         max_val = max(abs(f.n[i,j,mi]),max_val)
+         max_val = max(abs(f.n[i,j]),max_val)
       end
    end
 
@@ -69,10 +69,10 @@ function set_gaussian!(
   
    for j=1:ny
       for i=1:nx
-         f.n[i,j,mi] *= amp / max_val 
+         f.n[i,j] *= amp / max_val 
          
-         f.np1[i,j,mi] = f.n[i,j,mi] 
-         p.np1[i,j,mi] = p.n[i,j,mi] 
+         f.np1[i,j] = f.n[i,j] 
+         p.np1[i,j] = p.n[i,j] 
       end
    end
    return nothing
@@ -86,7 +86,6 @@ function set_qnm(
       f,
       p,
       spin::Int64,
-      mi::Int64,
       mv::Int64,
       l_ang::Int64,
       ru::Float64, 
@@ -103,7 +102,6 @@ function set_qnm(
       p,
       s::Int64,
       l::Int64,
-      mi::Int64,
       mv::Int64,
       n::Int64,
       a::Float64,
@@ -111,8 +109,11 @@ function set_qnm(
       Rv::Vector{Float64},
       Yv::Vector{Float64}
    )
-   aval = round(digits=12,a)
+   @assert f.mv == mv
+   @assert p.mv == mv
    nx, ny = f.nx, f.ny
+   
+   aval = round(digits=12,a)
   
    qnmpath = dirname(pwd())*"/qnm"
    h5f = h5read(
@@ -125,8 +126,8 @@ function set_qnm(
    lvals = [i+lmin for i in range(length(lpoly))]
    for j=1:ny
       for i=1:nx 
-         f.n[i,j,mi]  = roply(Rv[i]) 
-         f.n[i,j,mi] *= sum(
+         f.n[i,j]  = roply(Rv[i]) 
+         f.n[i,j] *= sum(
             [lpoly[i]*swal(spin,mv,(i-1)+lmin,Yv[j]) 
              for i in 0:length(lpoly)
             ]
@@ -136,16 +137,16 @@ function set_qnm(
    ## rescale  
    for j=1:ny
       for i=1:nx
-         f.n[i,j,mi] *= amp / max_val    
-         f.np1[i,j,mi] = f.n[i,j,mi] 
+         f.n[i,j] *= amp / max_val    
+         f.np1[i,j] = f.n[i,j] 
       end
    end
    ## p = f,t = -iωf  
    omega = h5f["omega"]
    for j=1:ny
       for i=1:nx
-         p.n[i,j,mi]   = -im*omega*f.n[i,j,mi]
-         p.np1[i,j,mi] = p.n[i,j,mi] 
+         p.n[i,j]   = -im*omega*f.n[i,j]
+         p.np1[i,j] = p.n[i,j] 
       end
    end
    return nothing

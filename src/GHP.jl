@@ -18,7 +18,7 @@ include("Sphere.jl")
 using .Fields: Field
 using .Sphere: swal_raising_matrix, swal_lowering_matrix, angular_matrix_mult!
 
-export GHP_ops, set_edth!, set_edth_prime!, set_thorn!, set_thorn_prime!
+export GHP_ops, Initialize_GHP_ops, set_edth!, set_edth_prime!, set_thorn!, set_thorn_prime!
 
 struct GHP_ops
 
@@ -34,17 +34,16 @@ struct GHP_ops
    pre_thorn_prime_DT::Array{ComplexF64,2}
    pre_thorn_prime_DR::Array{ComplexF64,2} 
 
-   raise::Array{ComplexF64,4}
-   lower::Array{ComplexF64,4}
+   raise::Array{ComplexF64,3}
+   lower::Array{ComplexF64,3}
 
    smap::Dict{Int64,Int64}
-   mmap::Dict{Int64,Int64}
 
    function GHP_ops(;
          Rvals::Vector{Float64},
          Cvals::Vector{Float64},
          Svals::Vector{Float64},
-         Mvals::Vector{Int64},
+         mval::Int64,
          bhm::Float64,
          bhs::Float64,
          cl::Float64) 
@@ -66,11 +65,10 @@ struct GHP_ops
       pre_thorn_prime_DT     = zeros(ComplexF64,nx,ny) 
       pre_thorn_prime_DR     = zeros(ComplexF64,nx,ny) 
   
-      raise = zeros(ComplexF64,ny,ny,length(Mvals),length(spins))
-      lower = zeros(ComplexF64,ny,ny,length(Mvals),length(spins))
+      raise = zeros(ComplexF64,ny,ny,length(spins))
+      lower = zeros(ComplexF64,ny,ny,length(spins))
 
       smap = Dict{Int64,Int64}()
-      mmap = Dict{Int64,Int64}()
 
       for j=1:ny
          cy = Cvals[j]
@@ -155,21 +153,16 @@ struct GHP_ops
          end
       end
     
-      for (j,s) in enumerate(spins)
-         for (i,m) in enumerate(Mvals) 
-            tmp_raise = swal_raising_matrix( ny,s,m)
-            tmp_lower = swal_lowering_matrix(ny,s,m)
+      for (i,s) in enumerate(spins)
+         tmp_raise = swal_raising_matrix( ny,s,mval)
+         tmp_lower = swal_lowering_matrix(ny,s,mval)
 
-            raise[:,:,i,j] .= tmp_raise
-            lower[:,:,i,j] .= tmp_lower
-         end
+         raise[:,:,i] .= tmp_raise
+         lower[:,:,i] .= tmp_lower
       end
 
       for (i,s) in enumerate(spins)
          smap[s]=i
-      end
-      for (i,m) in enumerate(Mvals)
-         mmap[m]=i
       end
 
       return new(
@@ -186,11 +179,24 @@ struct GHP_ops
          pre_thorn_prime_DR,
          raise,
          lower,
-         smap,
-         mmap
+         smap
       )
    end
 end   
+
+function Initialize_GHP_ops(;
+      Rvals::Vector{Float64},
+      Cvals::Vector{Float64},
+      Svals::Vector{Float64},
+      Mvals::Vector{Int64},
+      bhm::Float64,
+      bhs::Float64,
+      cl::Float64) 
+   return Dict([
+      (mv,GHP_ops(Rvals=Rvals,Cvals=Cvals,Svals=Svals,mval=mv,bhm=bhm,bhs=bhs,cl=cl)) 
+      for mv in Mvals
+     ])
+end
 
 function set_edth!(;
       edth ::Array{ComplexF64,2},
@@ -205,7 +211,7 @@ function set_edth!(;
    nx, ny = size(edth)
    p = (spin+boost)
    
-   angular_matrix_mult!(raised,f,@view Op.raise[:,:,Op.mmap[m_ang],Op.smap[spin]])
+   angular_matrix_mult!(raised,f,view(Op.raise,:,:,Op.smap[spin]))
    
    for j=1:ny
       for i=1:nx
@@ -234,7 +240,7 @@ function set_edth_prime!(;
    nx, ny = size(edth)
    q = (-spin+boost)
 
-   angular_matrix_mult!(lowered,f,@view Op.lower[:,:,Op.mmap[m_ang],Op.smap[spin]]) 
+   angular_matrix_mult!(lowered,f,view(Op.lower,:,:,Op.smap[spin])) 
 
    for j=1:ny
       for i=1:nx
