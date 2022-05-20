@@ -134,6 +134,9 @@ function launch(paramfile::String)::Nothing
             cl, Rv, Yv
          )
          Io.save_csv(tc=0,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lin_f[mv])
+         if runtype=="reconstruction"
+            Io.save_csv(tc=0,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lam_f[mv])
+         end
       end
    elseif params["id_kind"]=="qnm"
       Id.set_qnm!()
@@ -218,6 +221,9 @@ function launch(paramfile::String)::Nothing
          println("time/bhm ", tc*dt/bhm)
          Threads.@threads for mv in Mv 
             Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lin_f[mv])
+            if runtype=="reconstruction"
+               Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lam_f[mv])
+            end 
          end 
       end
    end
