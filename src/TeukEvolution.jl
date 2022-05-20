@@ -17,7 +17,7 @@ import .Sphere
 import .Id
 import .BackgroundNP
 using .GHP: GHP_ops, Initialize_GHP_ops 
-using .Evolution: Evo_psi4, Initialize_Evo_psi4, Evolve_psi4!
+using .Evolution: Evo_lin_f, Initialize_Evo_lin_f, Evolve_lin_f!
 using .LinearEvolution: Linear_evolution!
 
 import TOML
@@ -46,6 +46,8 @@ function launch(paramfile::String)::Nothing
    cfl = convert(Float64,params["cfl"])
    bhs = convert(Float64,params["bhs"])
    bhm = convert(Float64,params["bhm"])
+
+   runtype = convert(String,params["runtype"])
 
    outdir = params["outdir"]
    ##===================
@@ -107,7 +109,7 @@ function launch(paramfile::String)::Nothing
    ## Fixed fields (for evolution equations) 
    ##=======================================
    println("Initializing psi4 evolution operators")
-   evo_psi4 = Initialize_Evo_psi4(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl,spin=psi_spin)
+   evo_psi4 = Initialize_Evo_lin_f(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl,spin=psi_spin)
    
    println("Initializing GHP operators")
    ghp = Initialize_GHP_ops(Rvals=Rv,Cvals=Cv,Svals=Sv,Mvals=Mv,bhm=bhm,bhs=bhs,cl=cl)
@@ -145,22 +147,69 @@ function launch(paramfile::String)::Nothing
    println("Beginning evolution")
  
    for tc=1:nt
-      Threads.@threads for mv in Mv
-         Evolve_psi4!(psi4_lin_f[mv],psi4_lin_p[mv],evo_psi4[mv],dr,dt) 
-        
-         lin_f_n   = psi4_lin_f[mv].n
-         lin_p_n   = psi4_lin_p[mv].n
-         lin_f_np1 = psi4_lin_f[mv].np1
-         lin_p_np1 = psi4_lin_p[mv].np1
+      if runtype=="reconstruction"
+         for mv in Mv
+            if mv>=0
+               Linear_evolution!(
+                  psi4_f_pm=psi4_f[mv], psi4_f_nm=psi4_f[-mv],
+                  psi4_p_pm=psi4_p[mv], psi4_p_nm=psi4_p[-mv],
+                  psi3_pm=psi3_f[mv],   psi3_nm=psi3_f[-mv],
+                  psi2_pm=psi2_f[mv],   psi2_nm=psi2_f[-mv],
+                  lam_pm=lam_f[mv],     lam_nm=lam_f[-mv],
+                  pi_pm=pi_f[mv],       pi_nm=pi_f[-mv],
+                  hmbmb_pm=hmbmb_f[mv], hmbmb_nm=hmbmb_f[-mv],
+                  hlmb_pm=hlmb_f[mv],   hlmb_nm=hlmb_f[-mv],
+                  muhll_pm=muhll_f[mv], muhll_nm=muhll_f[-mv],
+                  evo_psi4,
+                  ghp,
+                  bkgrd_np,
+                  Rv,
+                  mv,
+                  dr, dt
+               )
+            end
+         end            
+         for mv in Mv
+            lin_f_n   = psi4_lin_f[mv].n
+            lin_p_n   = psi4_lin_p[mv].n
+            lin_f_np1 = psi4_lin_f[mv].np1
+            lin_p_np1 = psi4_lin_p[mv].np1
+            psi4_f_pm=psi4_f[mv], psi4_f_nm=psi4_f[-mv],
+            psi4_p_pm=psi4_p[mv], psi4_p_nm=psi4_p[-mv],
+            psi3_pm=psi3_f[mv],   psi3_nm=psi3_f[-mv],
+            psi2_pm=psi2_f[mv],   psi2_nm=psi2_f[-mv],
+            lam_pm=lam_f[mv],     lam_nm=lam_f[-mv],
+            pi_pm=pi_f[mv],       pi_nm=pi_f[-mv],
+            hmbmb_pm=hmbmb_f[mv], hmbmb_nm=hmbmb_f[-mv],
+            hlmb_pm=hlmb_f[mv],   hlmb_nm=hlmb_f[-mv],
+            muhll_pm=muhll_f[mv], muhll_nm=muhll_f[-mv],
          
-         for j=1:ny
-            for i=1:nx
-               lin_f_n[i,j] = lin_f_np1[i,j] 
-               lin_p_n[i,j] = lin_p_np1[i,j] 
+            for j=1:ny
+               for i=1:nx
+                  lin_f_n[i,j] = lin_f_np1[i,j] 
+                  lin_p_n[i,j] = lin_p_np1[i,j] 
+               end
             end
          end
+      elseif runtype=="linear_field"
+         Threads.@threads for mv in Mv
+            Evolve_lin_f!(psi4_lin_f[mv],psi4_lin_p[mv],evo_psi4[mv],dr,dt) 
+           
+            lin_f_n   = psi4_lin_f[mv].n
+            lin_p_n   = psi4_lin_p[mv].n
+            lin_f_np1 = psi4_lin_f[mv].np1
+            lin_p_np1 = psi4_lin_p[mv].np1
+         
+            for j=1:ny
+               for i=1:nx
+                  lin_f_n[i,j] = lin_f_np1[i,j] 
+                  lin_p_n[i,j] = lin_p_np1[i,j] 
+               end
+            end
+         end
+      else
+         throw(DomainError(runtype,"Unsupported `runtype`")) 
       end
-      
       if tc%ts==0
          println("time/bhm ", tc*dt/bhm)
          Threads.@threads for mv in Mv 

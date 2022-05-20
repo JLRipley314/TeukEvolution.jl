@@ -12,6 +12,8 @@ m_vals = [-2,2]
 
 id_kind = "gaussian"
 
+runtype = "linear_field"
+
 id_l_ang = [2,2]
 id_ru = [6.0,6.0]
 id_rl = [1.5,1.5] 

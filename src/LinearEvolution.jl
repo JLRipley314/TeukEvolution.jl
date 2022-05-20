@@ -23,7 +23,7 @@ using .Radial: set_d1!
 using .GHP: GHP_ops 
 using .Fields: Field 
 using .BackgroundNP: NP_0
-using .Evolution: Evo_psi4
+using .Evolution: Evo_lin_f
 
 export Linear_evolution!
 
@@ -309,7 +309,7 @@ function set_linear_k!(;
       hlmb_f,     hlmb_f_l    ::Array{ComplexF64,2},
       hlmb_f_nm,  hlmb_f_nm_l ::Array{ComplexF64,2},
       muhll_f, muhll_f_l::Array{ComplexF64,2},
-      Evo::Evo_psi4,
+      Evo::Evo_lin_f,
       Op::GHP_ops,
       NP::NP_0,
       R::Vector{Float64},
@@ -433,7 +433,7 @@ function Linear_evolution!(;
       hmbmb_pm,  hmbmb_nm,
       hlmb_pm,   hlmb_nm,
       muhll_pm,  muhll_nm,
-      Evo::Evo_psi4,
+      Evo::Evo_lin_f,
       Op::GHP_ops,
       NP::NP_0,
       R::Vector{Float64},

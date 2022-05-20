@@ -1,3 +1,7 @@
+"""
+General evolution for spin s field about Kerr
+"""
+
 module Evolution
 
 include("Fields.jl")
@@ -17,12 +21,9 @@ const half  = 1.0/2.0
 const third = 1.0/3.0
 const sixth = 1.0/6.0
 
-export Evo_psi4, Initialize_Evo_psi4, Evolve_psi4!
+export Evo_lin_f, Initialize_Evo_lin_f, Evolve_lin_f!
 
-"""
-   Struct for the evolution matrices for psi4
-"""
-struct Evo_psi4 
+struct Evo_lin_f 
    A_pp::Array{Float64,2}
    A_pq::Array{Float64,2}
    B_pp::Array{ComplexF64,2}
@@ -34,7 +35,7 @@ struct Evo_psi4
 
    mv::Int64
 
-   function Evo_psi4(;
+   function Evo_lin_f(;
          Rvals::Vector{Float64},
          Cvals::Vector{Float64},
          Svals::Vector{Float64},
@@ -131,7 +132,7 @@ struct Evo_psi4
    end
 end
 
-function Initialize_Evo_psi4(;
+function Initialize_Evo_lin_f(;
       Rvals::Vector{Float64},
       Cvals::Vector{Float64},
       Svals::Vector{Float64},
@@ -141,7 +142,7 @@ function Initialize_Evo_psi4(;
       cl::Float64,
       spin::Int64)
    return Dict([
-      (mv,Evo_psi4(Rvals=Rvals,Cvals=Cvals,Svals=Svals,bhm=bhm,bhs=bhs,mv=mv,cl=cl,spin=spin))
+      (mv,Evo_lin_f(Rvals=Rvals,Cvals=Cvals,Svals=Svals,bhm=bhm,bhs=bhs,mv=mv,cl=cl,spin=spin))
       for mv in Mvals
      ])
 end
@@ -182,33 +183,33 @@ function set_kp(
 end
 
 """
-Fourth order Runge-Kutta evolution of psi4
+Fourth order Runge-Kutta evolution of linear field 
 """
-function Evolve_psi4!(
-      psi4_f, 
-      psi4_p, 
-      Evo::Evo_psi4,
+function Evolve_lin_f!(
+      lin_f, 
+      lin_p, 
+      Evo::Evo_lin_f,
       dr::Float64,
       dt::Float64
    )::Nothing
-   @assert Evo.mv == psi4_f.mv
-   @assert Evo.mv == psi4_p.mv
+   @assert Evo.mv == lin_f.mv
+   @assert Evo.mv == lin_p.mv
 
    ## simplify names for convenience
    
-   f_n       = psi4_f.n
-   f_tmp     = psi4_f.tmp
-   f_np1     = psi4_f.np1
-   f_k       = psi4_f.k
-   f_rd1     = psi4_f.rad_d1
-   f_rd2     = psi4_f.rad_d2
-   f_sph_lap = psi4_f.sph_lap
+   f_n       = lin_f.n
+   f_tmp     = lin_f.tmp
+   f_np1     = lin_f.np1
+   f_k       = lin_f.k
+   f_rd1     = lin_f.rad_d1
+   f_rd2     = lin_f.rad_d2
+   f_sph_lap = lin_f.sph_lap
 
-   p_n       = psi4_p.n
-   p_tmp     = psi4_p.tmp
-   p_np1     = psi4_p.np1
-   p_k       = psi4_p.k
-   p_rd1     = psi4_p.rad_d1
+   p_n       = lin_p.n
+   p_tmp     = lin_p.tmp
+   p_np1     = lin_p.np1
+   p_k       = lin_p.k
+   p_rd1     = lin_p.rad_d1
 
    A_pp = Evo.A_pp
    A_pq = Evo.A_pq
