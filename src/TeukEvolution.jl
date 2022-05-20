@@ -8,15 +8,17 @@ include("Id.jl")
 include("Evolution.jl")
 include("GHP.jl")
 include("BackgroundNP.jl")
+include("LinearEvolution.jl")
 
 using .Fields: Field, Initialize_Field
 import .Io
 import .Radial
 import .Sphere
 import .Id
-using .Evolution: Evo_psi4, Initialize_Evo_psi4, Evolve_psi4!
-using .GHP: GHP_ops, Initialize_GHP_ops 
 import .BackgroundNP
+using .GHP: GHP_ops, Initialize_GHP_ops 
+using .Evolution: Evo_psi4, Initialize_Evo_psi4, Evolve_psi4!
+using .LinearEvolution: Linear_evolution!
 
 import TOML
 
@@ -28,7 +30,7 @@ import TOML
 #const mi = 1 + MPI.Comm_rank(comm) ## m index
 #const m_val = params["m_vals"][mi] ## value of m angular number
 
-function launch(paramfile::String)
+function launch(paramfile::String)::Nothing
    println("Launching run, params=$paramfile")
    params = TOML.parsefile(paramfile)
 

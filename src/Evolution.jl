@@ -5,14 +5,13 @@ include("Radial.jl")
 include("Sphere.jl")
 include("BackgroundNP.jl")
 include("GHP.jl")
-include("MetricReconstruction.jl")
 
 using  .Fields: Field
 import .Radial
 import .Sphere
 import .BackgroundNP: NP_0 
 import .GHP: GHP_ops
-import .MetricReconstruction
+#import .MetricReconstruction
 
 const half  = 1.0/2.0
 const third = 1.0/3.0
@@ -152,18 +151,18 @@ end
 set_kp
 """
 function set_kp(
-      kp, 
-      f_rd1, 
-      f_rd2, 
-      sph_lap, 
-      p_rd1, 
-      f, 
-      p,
-      A_pp,
-      A_pq,
-      B_pp,
-      B_pq,
-      B_pf
+      kp::Array{ComplexF64,2}, 
+      f_rd1::Array{ComplexF64,2}, 
+      f_rd2::Array{ComplexF64,2}, 
+      sph_lap::Array{ComplexF64,2}, 
+      p_rd1::Array{ComplexF64,2}, 
+      f::Array{ComplexF64,2}, 
+      p::Array{ComplexF64,2},
+      A_pp::Array{Float64,2},
+      A_pq::Array{Float64,2},
+      B_pp::Array{ComplexF64,2},
+      B_pq::Array{ComplexF64,2},
+      B_pf::Array{ComplexF64,2}
    )
    nx, ny = size(kp)
    for j=1:ny
@@ -191,7 +190,7 @@ function Evolve_psi4!(
       Evo::Evo_psi4,
       dr::Float64,
       dt::Float64
-   )
+   )::Nothing
    @assert Evo.mv == psi4_f.mv
    @assert Evo.mv == psi4_p.mv
 
