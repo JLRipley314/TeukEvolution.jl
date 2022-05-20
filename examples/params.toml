@@ -12,7 +12,7 @@ m_vals = [-2,2]
 
 id_kind = "gaussian"
 
-runtype = "linear_field"
+runtype = "reconstruction"
 
 id_l_ang = [2,2]
 id_ru = [6.0,6.0]

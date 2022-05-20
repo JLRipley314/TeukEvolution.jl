@@ -82,15 +82,15 @@ function launch(paramfile::String)::Nothing
    ## Dynamical fields 
    ##=================
    println("Initializing linear psi4")
-   psi4_lin_f = Initialize_Field(name="psi4_lin_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
-   psi4_lin_p = Initialize_Field(name="psi4_lin_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
+   lin_f = Initialize_Field(name="lin_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
+   lin_p = Initialize_Field(name="lin_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
    
    println("Initializing metric reconstruction fields")
    psi3_f = Initialize_Field(name="psi3",spin=-1,boost=-1,falloff=2,Mvals=Mv,nx=nx,ny=ny)
    psi2_f = Initialize_Field(name="psi2",spin= 0,boost= 0,falloff=3,Mvals=Mv,nx=nx,ny=ny)
 
-   la_f = Initialize_Field(name="la",spin=-2,boost=-1,falloff=1,Mvals=Mv,nx=nx,ny=ny)
-   pi_f = Initialize_Field(name="pi",spin=-1,boost= 0,falloff=2,Mvals=Mv,nx=nx,ny=ny)
+   lam_f = Initialize_Field(name="lam",spin=-2,boost=-1,falloff=1,Mvals=Mv,nx=nx,ny=ny)
+   pi_f  = Initialize_Field(name="pi", spin=-1,boost= 0,falloff=2,Mvals=Mv,nx=nx,ny=ny)
 
    muhll_f = Initialize_Field(name="muhll",spin= 0,boost=1,falloff=3,Mvals=Mv,nx=nx,ny=ny)
    hlmb_f  = Initialize_Field(name="hlmb" ,spin=-1,boost=1,falloff=2,Mvals=Mv,nx=nx,ny=ny)
@@ -102,8 +102,8 @@ function launch(paramfile::String)::Nothing
    res_hll_f      = Initialize_Field(name="res_hll",     spin= 0,boost= 2,falloff=2,Mvals=Mv,nx=nx,ny=ny)
   
    println("Initializing 2nd order psi4")
-   psi4_scd_f = Initialize_Field(name="psi4_scd_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
-   psi4_scd_p = Initialize_Field(name="psi4_scd_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
+   scd_f = Initialize_Field(name="scd_f",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
+   scd_p = Initialize_Field(name="scd_p",spin=psi_spin,boost=psi_spin,falloff=psi_falloff,Mvals=Mv,nx=nx,ny=ny)
    
    ##=======================================
    ## Fixed fields (for evolution equations) 
@@ -123,7 +123,7 @@ function launch(paramfile::String)::Nothing
  
    if params["id_kind"]=="gaussian"
       for (mi,mv) in enumerate(Mv) 
-         Id.set_gaussian!(psi4_lin_f[mv], psi4_lin_p[mv], 
+         Id.set_gaussian!(lin_f[mv], lin_p[mv], 
             psi_spin,
             mv,
             params["id_l_ang"][mi],
@@ -133,12 +133,12 @@ function launch(paramfile::String)::Nothing
             params["id_amp"][mi][1] + params["id_amp"][mi][2]*im,
             cl, Rv, Yv
          )
-         Io.save_csv(tc=0,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=psi4_lin_f[mv])
+         Io.save_csv(tc=0,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lin_f[mv])
       end
    elseif params["id_kind"]=="qnm"
       Id.set_qnm!()
    else
-      throw(DomainError(params["id_kind"],"Unsupported `id_kind`")) 
+      throw(DomainError(params["id_kind"],"Unsupported `id_kind` in parameter file")) 
    end
    
    ##===================
@@ -151,8 +151,8 @@ function launch(paramfile::String)::Nothing
          for mv in Mv
             if mv>=0
                Linear_evolution!(
-                  psi4_f_pm=psi4_f[mv], psi4_f_nm=psi4_f[-mv],
-                  psi4_p_pm=psi4_p[mv], psi4_p_nm=psi4_p[-mv],
+                  psi4_f_pm=lin_f[mv],  psi4_f_nm=lin_f[-mv],
+                  psi4_p_pm=lin_p[mv],  psi4_p_nm=lin_p[-mv],
                   psi3_pm=psi3_f[mv],   psi3_nm=psi3_f[-mv],
                   psi2_pm=psi2_f[mv],   psi2_nm=psi2_f[-mv],
                   lam_pm=lam_f[mv],     lam_nm=lam_f[-mv],
@@ -160,45 +160,49 @@ function launch(paramfile::String)::Nothing
                   hmbmb_pm=hmbmb_f[mv], hmbmb_nm=hmbmb_f[-mv],
                   hlmb_pm=hlmb_f[mv],   hlmb_nm=hlmb_f[-mv],
                   muhll_pm=muhll_f[mv], muhll_nm=muhll_f[-mv],
-                  evo_psi4,
-                  ghp,
-                  bkgrd_np,
-                  Rv,
-                  mv,
-                  dr, dt
+                  Evo_pm=evo_psi4[mv],  Evo_nm=evo_psi4[-mv],
+                  Op_pm=ghp[mv],        Op_nm=ghp[-mv],
+                  NP=bkgrd_np,
+                  R=Rv,
+                  m_ang=mv,
+                  bhm=bhm,
+                  cl=cl, dr=dr, dt=dt
                )
             end
          end            
          for mv in Mv
-            lin_f_n   = psi4_lin_f[mv].n
-            lin_p_n   = psi4_lin_p[mv].n
-            lin_f_np1 = psi4_lin_f[mv].np1
-            lin_p_np1 = psi4_lin_p[mv].np1
-            psi4_f_pm=psi4_f[mv], psi4_f_nm=psi4_f[-mv],
-            psi4_p_pm=psi4_p[mv], psi4_p_nm=psi4_p[-mv],
-            psi3_pm=psi3_f[mv],   psi3_nm=psi3_f[-mv],
-            psi2_pm=psi2_f[mv],   psi2_nm=psi2_f[-mv],
-            lam_pm=lam_f[mv],     lam_nm=lam_f[-mv],
-            pi_pm=pi_f[mv],       pi_nm=pi_f[-mv],
-            hmbmb_pm=hmbmb_f[mv], hmbmb_nm=hmbmb_f[-mv],
-            hlmb_pm=hlmb_f[mv],   hlmb_nm=hlmb_f[-mv],
-            muhll_pm=muhll_f[mv], muhll_nm=muhll_f[-mv],
+            lin_f_n = lin_f[mv].n;   lin_f_np1 = lin_f[mv].np1
+            lin_p_n = lin_p[mv].n;   lin_p_np1 = lin_p[mv].np1
+            psi3_n  = psi3_f[mv].n;  psi3_np1  = psi3_f[mv].np1
+            psi2_n  = psi2_f[mv].n;  psi2_np1  = psi2_f[mv].np1
+            lam_n   = lam_f[mv].n;   lam_np1   = lam_f[mv].np1
+            pi_n    = pi_f[mv].n;    pi_np1    = pi_f[mv].np1
+            hmbmb_n = hmbmb_f[mv].n; hmbmb_np1 = hmbmb_f[mv].np1
+            hlmb_n  = hlmb_f[mv].n;  hlmb_np1  = hlmb_f[mv].np1
+            muhll_n = muhll_f[mv].n; muhll_np1 = muhll_f[mv].np1
          
             for j=1:ny
                for i=1:nx
                   lin_f_n[i,j] = lin_f_np1[i,j] 
                   lin_p_n[i,j] = lin_p_np1[i,j] 
+                  psi3_n[i,j]  = psi3_np1[i,j]
+                  psi2_n[i,j]  = psi2_np1[i,j]
+                  lam_n[i,j]   = lam_np1[i,j]
+                  pi_n[i,j]    = pi_np1[i,j]
+                  hmbmb_n[i,j] = hmbmb_np1[i,j]
+                  hlmb_n[i,j]  = hlmb_np1[i,j]
+                  muhll_n[i,j] = muhll_np1[i,j]
                end
             end
          end
       elseif runtype=="linear_field"
          Threads.@threads for mv in Mv
-            Evolve_lin_f!(psi4_lin_f[mv],psi4_lin_p[mv],evo_psi4[mv],dr,dt) 
+            Evolve_lin_f!(lin_f[mv],lin_p[mv],evo_psi4[mv],dr,dt) 
            
-            lin_f_n   = psi4_lin_f[mv].n
-            lin_p_n   = psi4_lin_p[mv].n
-            lin_f_np1 = psi4_lin_f[mv].np1
-            lin_p_np1 = psi4_lin_p[mv].np1
+            lin_f_n   = lin_f[mv].n
+            lin_p_n   = lin_p[mv].n
+            lin_f_np1 = lin_f[mv].np1
+            lin_p_np1 = lin_p[mv].np1
          
             for j=1:ny
                for i=1:nx
@@ -208,12 +212,12 @@ function launch(paramfile::String)::Nothing
             end
          end
       else
-         throw(DomainError(runtype,"Unsupported `runtype`")) 
+         throw(DomainError(runtype,"Unsupported `runtype` in parameter file")) 
       end
       if tc%ts==0
          println("time/bhm ", tc*dt/bhm)
          Threads.@threads for mv in Mv 
-            Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=psi4_lin_f[mv])
+            Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lin_f[mv])
          end 
       end
    end

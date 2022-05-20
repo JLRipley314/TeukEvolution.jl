@@ -201,12 +201,12 @@ end
 function set_edth!(;
       edth ::Array{ComplexF64,2},
       spin ::Int64, 
-      m_ang::Int64, 
       boost::Int64, 
+      m_ang::Int64, 
       f     ::Array{ComplexF64,2}, 
       DT    ::Array{ComplexF64,2}, 
       raised::Array{ComplexF64,2},
-      Op::GHP_ops
+      Op
      )
    nx, ny = size(edth)
    p = (spin+boost)
@@ -230,12 +230,12 @@ end
 function set_edth_prime!(;
       edth_prime::Array{ComplexF64,2},
       spin ::Int64, 
-      m_ang::Int64, 
       boost::Int64, 
+      m_ang::Int64, 
       f      ::Array{ComplexF64,2},
       DT     ::Array{ComplexF64,2}, 
       lowered::Array{ComplexF64,2},
-      Op::GHP_ops
+      Op
      )
    nx, ny = size(edth)
    q = (-spin+boost)
@@ -259,15 +259,15 @@ end
 function set_thorn!(;
       thorn::Array{ComplexF64,2},
       spin ::Int64, 
-      m_ang::Int64,
       boost::Int64, 
+      m_ang::Int64,
       falloff::Int64, 
       f    ::Array{ComplexF64,2}, 
       DT   ::Array{ComplexF64,2}, 
       DR   ::Array{ComplexF64,2},
       ep_0 ::Array{ComplexF64,2},
       R    ::Vector{Float64},
-      Op::GHP_ops
+      Op
      )
    nx, ny = size(thorn)
    p = ( spin+boost)
@@ -299,7 +299,7 @@ function set_thorn_prime!(;
       DT::Array{ComplexF64,2}, 
       DR::Array{ComplexF64,2}, 
       R ::Vector{Float64},
-      Op::GHP_ops
+      Op
      )
    for j=1:ny
       for i=1:nx
