@@ -4,8 +4,8 @@ using Test
 include("TestRadial.jl")
 include("TestSphere.jl")
 
-import .TestRadial, .TestSphere
-
+import .TestRadial
+import .TestSphere
 #============================================================================
 ## Testing Radial functions
 ============================================================================#

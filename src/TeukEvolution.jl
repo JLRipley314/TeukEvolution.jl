@@ -18,7 +18,7 @@ import .Id
 import .BackgroundNP
 using .GHP: GHP_ops, Initialize_GHP_ops 
 using .Evolution: Evo_lin_f, Initialize_Evo_lin_f, Evolve_lin_f!
-using .LinearEvolution: Linear_evolution!
+using .LinearEvolution: Linear_evolution!, Set_independent_residuals!
 
 import TOML
 
@@ -173,7 +173,7 @@ function launch(paramfile::String)::Nothing
                )
             end
          end            
-         for mv in Mv
+         Threads.@threads for mv in Mv
             lin_f_n = lin_f[mv].n;   lin_f_np1 = lin_f[mv].np1
             lin_p_n = lin_p[mv].n;   lin_p_np1 = lin_p[mv].np1
             psi3_n  = psi3_f[mv].n;  psi3_np1  = psi3_f[mv].np1
@@ -221,7 +221,26 @@ function launch(paramfile::String)::Nothing
          println("time/bhm ", tc*dt/bhm)
          Threads.@threads for mv in Mv 
             Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lin_f[mv])
+            
             if runtype=="reconstruction"
+               Set_independent_residuals!(
+                     res_bianchi3_f=res_bianchi3_f[mv],
+                     res_bianchi2_f=res_bianchi2_f[mv],
+                     res_hll_f=res_hll_f[mv],
+                     psi4_f=lin_f[mv],
+                     psi3_f=psi3_f[mv],
+                     psi2_f=psi2_f[mv],
+                     lam_f=lam_f[mv],
+                     pi_f=pi_f[mv],
+                     hmbmb_f=hmbmb_f[mv],
+                     hlmb_f=hlmb_f[mv],
+                     muhll_f=muhll_f[mv],
+                     Op=ghp[mv],
+                     NP=bkgrd_np,
+                     R=Rv,
+                     m_ang=mv
+                  )
+               Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=res_bianchi3_f[mv])
                Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lam_f[mv])
             end 
          end 

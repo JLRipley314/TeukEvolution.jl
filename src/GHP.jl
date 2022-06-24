@@ -46,7 +46,7 @@ struct GHP_ops
          mval::Int64,
          bhm::Float64,
          bhs::Float64,
-         cl::Float64) 
+         cl ::Float64) 
      
       nx = length(Rvals)
       ny = length(Cvals)
@@ -191,7 +191,7 @@ function Initialize_GHP_ops(;
       Mvals::Vector{Int64},
       bhm::Float64,
       bhs::Float64,
-      cl::Float64) 
+      cl ::Float64) 
    return Dict([
       (mv,GHP_ops(Rvals=Rvals,Cvals=Cvals,Svals=Svals,mval=mv,bhm=bhm,bhs=bhs,cl=cl)) 
       for mv in Mvals
@@ -237,7 +237,7 @@ function set_edth_prime!(;
       lowered::Array{ComplexF64,2},
       Op
      )
-   nx, ny = size(edth)
+   nx, ny = size(edth_prime)
    q = (-spin+boost)
 
    angular_matrix_mult!(lowered,f,view(Op.lower,:,:,Op.smap[spin])) 
@@ -262,11 +262,11 @@ function set_thorn!(;
       boost::Int64, 
       m_ang::Int64,
       falloff::Int64, 
-      f    ::Array{ComplexF64,2}, 
-      DT   ::Array{ComplexF64,2}, 
-      DR   ::Array{ComplexF64,2},
-      ep_0 ::Array{ComplexF64,2},
-      R    ::Vector{Float64},
+      f   ::Array{ComplexF64,2}, 
+      DT  ::Array{ComplexF64,2}, 
+      DR  ::Array{ComplexF64,2},
+      eps_0::Array{ComplexF64,2},
+      R   ::Vector{Float64},
       Op
      )
    nx, ny = size(thorn)
@@ -282,7 +282,7 @@ function set_thorn!(;
             +  
             m_ang*Op.pre_thorn[i,j]*f[i,j]
             -  
-            R[i]*(p*ep_0[i,j] + q*conj(ep_0[i,j]))*f[i,j]
+            R[i]*(p*eps_0[i,j] + q*conj(eps_0[i,j]))*f[i,j]
            )
       end
    end
@@ -301,6 +301,8 @@ function set_thorn_prime!(;
       R ::Vector{Float64},
       Op
      )
+   nx, ny = size(thorn_prime)
+   
    for j=1:ny
       for i=1:nx
          thorn_prime_arr[i,j] = (

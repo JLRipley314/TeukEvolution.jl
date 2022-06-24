@@ -23,7 +23,7 @@ using .Fields: Field
 using .BackgroundNP: NP_0
 using .Evolution: Evo_lin_f
 
-export Linear_evolution!
+export Linear_evolution!, Set_independent_residuals
 
 const half  = 1.0/2.0
 const third = 1.0/3.0
@@ -98,7 +98,7 @@ function set_psi3_k!(
    return nothing
 end
 
-function set_lam_k!(
+function set_lam_k!(;
       k::Array{ComplexF64,2},
       lam::Array{ComplexF64,2},
       psi4::Array{ComplexF64,2},
@@ -396,7 +396,7 @@ function set_linear_k!(;
 
    finish_linear_reconstruction_k!(k=psi3_k, f=psi3_l, DR=psi3_DR, R=R, falloff=psi3_f.falloff, bhm=bhm, cl=cl, dr=dr)
    ##===============
-   set_lam_k!(lam_k, lam_l, psi4_f_l, mu_0, R)
+   set_lam_k!(k=lam_k, lam=lam_l, psi4=psi4_f_l, mu_0=mu_0, R=R)
    finish_linear_reconstruction_k!(k=lam_k, f=lam_l, DR=lam_DR, R=R, falloff=lam_f.falloff, bhm=bhm, cl=cl, dr=dr)
    ##===============
    GHP.set_edth!(edth=psi3_edth,spin=psi3_f.spin,boost=psi3_f.boost,m_ang=m_ang,f=psi3_l,DT=psi3_k,raised=psi3_raised,Op=Op) 
@@ -786,6 +786,40 @@ function Linear_evolution!(;
       end
    end
   
+   ## set k for level n+1 (for evaluating the independent residuals)
+
+   set_linear_k!(
+      psi4_f=psi4_f_pm,    psi4_f_l=psi4_f_pm_np1,
+      psi4_p=psi4_p_pm,    psi4_p_l=psi4_p_pm_np1,
+      psi3_f=psi3_pm,      psi3_l=psi3_pm_np1,
+      psi2_f=psi2_pm,      psi2_l=psi2_pm_np1,
+      lam_f=lam_pm,        lam_l=lam_pm_np1,
+      pi_f=pi_pm,          pi_l=pi_pm_np1,                            pi_nm_l=pi_nm_np1,
+      hmbmb_f=hmbmb_pm,    hmbmb_l=hmbmb_pm_np1, hmbmb_f_nm=hmbmb_nm, hmbmb_nm_l=hmbmb_nm_np1,
+      hlmb_f=hlmb_pm,      hlmb_l=hlmb_pm_np1,   hlmb_f_nm=hlmb_nm,   hlmb_nm_l=hlmb_nm_np1,
+      muhll_f=muhll_pm,    muhll_l=muhll_pm_np1,
+      Evo=Evo_pm, Op=Op_pm, NP=NP,
+      R=R,
+      m_ang=m_ang, 
+      bhm=bhm, cl=cl, dr=dr
+     )
+
+   set_linear_k!(
+      psi4_f=psi4_f_nm,    psi4_f_l=psi4_f_nm_np1,
+      psi4_p=psi4_p_nm,    psi4_p_l=psi4_p_nm_np1,
+      psi3_f=psi3_nm,      psi3_l=psi3_nm_np1,
+      psi2_f=psi2_nm,      psi2_l=psi2_nm_np1,
+      lam_f=lam_nm,        lam_l=lam_nm_np1,
+      pi_f=pi_nm,          pi_l=pi_nm_np1,                            pi_nm_l=pi_pm_np1,
+      hmbmb_f=hmbmb_nm,    hmbmb_l=hmbmb_nm_np1, hmbmb_f_nm=hmbmb_pm, hmbmb_nm_l=hmbmb_pm_np1,
+      hlmb_f=hlmb_nm,      hlmb_l=hlmb_nm_np1,   hlmb_f_nm=hlmb_pm,   hlmb_nm_l=hlmb_pm_np1,
+      muhll_f=muhll_nm,    muhll_l=muhll_nm_np1,
+      Evo=Evo_pm, Op=Op_nm, NP=NP,
+      R=R,
+      m_ang=-m_ang, 
+      bhm=bhm, cl=cl, dr=dr
+     )
+    
    ## Only filter psi4 for now
 
    filter!(psi4_f_pm_np1,psi4_f_pm_tmp,0.5)
@@ -807,6 +841,172 @@ function Linear_evolution!(;
 
    angular_matrix_mult!(psi4_f_nm_np1,psi4_f_nm_tmp,fltrM_nm)
    angular_matrix_mult!(psi4_p_nm_np1,psi4_p_nm_tmp,fltrM_nm)
+
+   return nothing
+end
+   
+function set_res_bianchi3!(;
+      res_bianchi3::Array{ComplexF64,2}, 
+      psi4::Array{ComplexF64,2},
+      psi3::Array{ComplexF64,2},
+      lam ::Array{ComplexF64,2},
+      psi3_edth_prime::Array{ComplexF64,2},
+      psi4_thorn::Array{ComplexF64,2},
+      pi_0  ::Array{ComplexF64,2},
+      rho_0 ::Array{ComplexF64,2},
+      psi2_0::Array{ComplexF64,2}
+     )::Nothing
+   nx, ny = size(res_bianchi3)
+   for j=1:ny
+      for i=1:nx
+         res_bianchi3[i,j] = (
+                          psi3_edth_prime[i,j]
+                          +
+                          4.0*pi_0[i,j]*psi3[i,j]
+                          -
+                          psi4_thorn[i,j]
+                          +
+                          rho_0[i,j]*psi4[i,j]
+                          -
+                          3.0*psi2_0[i,j]*lam[i,j]
+                         )
+      end
+   end
+   return nothing
+end
+
+function set_res_bianchi2!(;
+      res_bianchi2::Array{ComplexF64,2}, 
+      psi3::Array{ComplexF64,2},
+      psi2::Array{ComplexF64,2},
+      pi_f::Array{ComplexF64,2},
+      hlmb ::Array{ComplexF64,2},
+      hmbmb::Array{ComplexF64,2},
+      psi2_edth_prime::Array{ComplexF64,2},
+      psi3_thorn::Array{ComplexF64,2},
+      mu_0  ::Array{Float64,2},
+      tau_0 ::Array{Float64,2},
+      pi_0  ::Array{Float64,2},
+      rho_0 ::Array{Float64,2},
+      psi2_0::Array{Float64,2}
+     )::Nothing
+   nx, ny = size(res_bianchi2)
+   for j=1:ny
+      for i=1:nx
+         res_bianchi2[i,j] = (-
+                          3.0*psi2_0[i,j]*mu_0[i,j]*hlmb[i,j]
+                          -
+                          1.5*psi2_0[i,j]*tau_0[i,j]*hmbmb[i,j]
+                          -
+                          3.0*psi2_0[i,j]*pi_f[i,j]
+                          -
+                          psi2_edth_prime[i,j]
+                          -
+                          3.0*pi_0[i,j]*psi2[i,j]
+                          +
+                          psi3_thorn[i,j]
+                          -
+                          2.0*rho_0[i,j]*psi3[i,j]
+                         )
+      end
+   end
+   return nothing
+end
+
+
+"""
+Computation of independent residuals;
+See Sec. V.H of arXiv:2010.00162
+"""
+function Set_independent_residuals!(;
+      res_bianchi3_f,
+      res_bianchi2_f,
+      res_hll_f,
+      psi4_f,
+      psi3_f,
+      psi2_f,
+      lam_f,
+      pi_f,
+      hmbmb_f,
+      hlmb_f,
+      muhll_f,
+      Op,
+      NP,
+      R::Vector{Float64},
+      m_ang::Int64
+   )::Nothing
+ 
+   res_bianchi3 = res_bianchi3_f.np1
+   res_bianchi2 = res_bianchi2_f.np1
+   res_hll      = res_hll_f.np1
+   
+   psi4       = psi4_f.np1
+   psi4_k     = psi4_f.k
+   psi4_thorn = psi4_f.thorn
+   psi4_DR    = psi4_f.rad_d1
+   
+   psi3            = psi3_f.np1
+   psi3_k          = psi3_f.k
+   psi3_lowered    = psi3_f.lowered 
+   psi3_edth_prime = psi3_f.edth_prime
+   
+   psi2   = psi2_f.np1
+   psi2_k = psi2_f.k
+   
+   lam = lam_f.np1
+   Pi  = pi_f.np1
+   
+   hmbmb = hmbmb_f.np1
+   hlmb  = hlmb_f.np1
+   muhll = muhll_f.np1
+  
+   mu_0   = NP.mu_0
+   tau_0  = NP.tau_0
+   pi_0   = NP.pi_0
+   rho_0  = NP.rho_0
+   eps_0  = NP.eps_0
+   psi2_0 = NP.psi2_0
+  
+   ##
+   ## Bianchi 2 residual
+   ##
+   
+   GHP.set_edth_prime!(
+      edth_prime=psi3_edth_prime,
+      spin=psi3_f.spin, 
+      boost=psi3_f.boost, 
+      m_ang=m_ang, 
+      f=psi3,
+      DT=psi3_k, 
+      lowered=psi3_lowered,
+      Op=Op
+     )
+   
+   GHP.set_thorn!(;
+      thorn=psi4_thorn,
+      spin=psi4_f.spin, 
+      boost=psi4_f.boost, 
+      m_ang=m_ang,
+      falloff=psi4_f.falloff, 
+      f=psi4, 
+      DT=psi4_k, 
+      DR=psi4_DR,
+      eps_0=eps_0,
+      R=R,
+      Op=Op
+     )
+   
+   set_res_bianchi3!(
+         res_bianchi3=res_bianchi3, 
+         psi4=psi4,
+         psi3=psi3,
+         lam=lam,
+         psi3_edth_prime=psi3_edth_prime,
+         psi4_thorn=psi4_thorn,
+         pi_0=pi_0,
+         rho_0=rho_0,
+         psi2_0=psi2_0
+        )
 
    return nothing
 end

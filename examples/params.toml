@@ -2,8 +2,8 @@ outdir = "reconstruction"
 
 nx = 64 
 ny = 32 
-nt = 5000
-ts = 10  # save every ts time steps
+nt = 10000
+ts = 100  # save every ts time steps
 
 psi_spin    = -2 # spin-weight of linear evolution scalar
 psi_falloff = -1 # falloff (in r) of linear evolution scalar
@@ -19,12 +19,12 @@ id_ru = [6.0,6.0]
 id_rl = [1.5,1.5] 
 id_width = [10.0,10.0]
 id_amp = [
-	[0.2,0.0],
+	[0.0,0.0],
 	[0.2,0.0]
 ]  
 # format: [real part, imaginary part]
 
 cl  = 1.0 # compactification scale
 cfl = 0.5 # CFL number
-bhs = 0.7 # black hole spin 
+bhs = 0.0 # black hole spin 
 bhm = 1.0 # black hole mass
