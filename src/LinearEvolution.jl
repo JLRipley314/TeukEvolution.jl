@@ -74,7 +74,7 @@ function set_psi4_f_k!(;
    return nothing
 end
 
-function set_psi3_k!(
+function set_psi3_k!(;
       k::Array{ComplexF64},
       psi3::Array{ComplexF64},
       psi4::Array{ComplexF64},
@@ -394,6 +394,7 @@ function set_linear_k!(;
    ##===============
    GHP.set_edth!(edth=psi4_f_edth,spin=psi4_f.spin,boost=psi4_f.boost,m_ang=m_ang,f=psi4_f_l,DT=psi4_f_k,raised=psi4_f_raised,Op=Op) 
 
+   set_psi3_k!(k=psi3_k, psi3=psi3_l, psi4=psi4_f_l, psi4_edth=psi4_f_edth, mu_0=mu_0, tau_0=tau_0, R=R)
    finish_linear_reconstruction_k!(k=psi3_k, f=psi3_l, DR=psi3_DR, R=R, falloff=psi3_f.falloff, bhm=bhm, cl=cl, dr=dr)
    ##===============
    set_lam_k!(k=lam_k, lam=lam_l, psi4=psi4_f_l, mu_0=mu_0, R=R)
@@ -455,7 +456,6 @@ function Linear_evolution!(;
    psi4_f_pm_tmp = psi4_f_pm.tmp; psi4_f_nm_tmp = psi4_f_nm.tmp
    psi4_f_pm_np1 = psi4_f_pm.np1; psi4_f_nm_np1 = psi4_f_nm.np1
    psi4_f_pm_k   = psi4_f_pm.k;   psi4_f_nm_k   = psi4_f_nm.k
-   
    
    psi4_p_pm_n   = psi4_p_pm.n;   psi4_p_nm_n   = psi4_p_nm.n
    psi4_p_pm_tmp = psi4_p_pm.tmp; psi4_p_nm_tmp = psi4_p_nm.tmp
@@ -850,8 +850,8 @@ function set_res_bianchi3!(;
       psi4::Array{ComplexF64,2},
       psi3::Array{ComplexF64,2},
       lam ::Array{ComplexF64,2},
-      psi3_edth_prime::Array{ComplexF64,2},
       psi4_thorn::Array{ComplexF64,2},
+      psi3_edth_prime::Array{ComplexF64,2},
       pi_0  ::Array{ComplexF64,2},
       rho_0 ::Array{ComplexF64,2},
       psi2_0::Array{ComplexF64,2}
@@ -995,14 +995,16 @@ function Set_independent_residuals!(;
       R=R,
       Op=Op
      )
-   
+  
+   nx, ny = size(res_bianchi3)
+
    set_res_bianchi3!(
          res_bianchi3=res_bianchi3, 
          psi4=psi4,
          psi3=psi3,
          lam=lam,
-         psi3_edth_prime=psi3_edth_prime,
          psi4_thorn=psi4_thorn,
+         psi3_edth_prime=psi3_edth_prime,
          pi_0=pi_0,
          rho_0=rho_0,
          psi2_0=psi2_0

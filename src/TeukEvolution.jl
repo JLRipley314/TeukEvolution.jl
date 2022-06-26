@@ -133,9 +133,11 @@ function launch(paramfile::String)::Nothing
             params["id_amp"][mi][1] + params["id_amp"][mi][2]*im,
             cl, Rv, Yv
          )
-         Io.save_csv(tc=0,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lin_f[mv])
+         Io.save_csv(tc=0,mv=mv,outdir=outdir,f=lin_f[mv])
          if runtype=="reconstruction"
-            Io.save_csv(tc=0,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lam_f[mv])
+            Io.save_csv(tc=0,mv=mv,outdir=outdir,f=res_bianchi3_f[mv])
+            Io.save_csv(tc=0,mv=mv,outdir=outdir,f=lam_f[mv])
+            Io.save_csv(tc=0,mv=mv,outdir=outdir,f=psi3_f[mv])
          end
       end
    elseif params["id_kind"]=="qnm"
@@ -220,7 +222,7 @@ function launch(paramfile::String)::Nothing
       if tc%ts==0
          println("time/bhm ", tc*dt/bhm)
          Threads.@threads for mv in Mv 
-            Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lin_f[mv])
+            Io.save_csv(tc=tc,mv=mv,outdir=outdir,f=lin_f[mv])
             
             if runtype=="reconstruction"
                Set_independent_residuals!(
@@ -240,8 +242,9 @@ function launch(paramfile::String)::Nothing
                      R=Rv,
                      m_ang=mv
                   )
-               Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=res_bianchi3_f[mv])
-               Io.save_csv(tc=tc,mv=mv,Rv=Rv,Yv=Yv,outdir=outdir,f=lam_f[mv])
+               Io.save_csv(tc=tc,mv=mv,outdir=outdir,f=res_bianchi3_f[mv])
+               Io.save_csv(tc=tc,mv=mv,outdir=outdir,f=psi3_f[mv])
+               Io.save_csv(tc=tc,mv=mv,outdir=outdir,f=lam_f[mv])
             end 
          end 
       end

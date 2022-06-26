@@ -1,7 +1,7 @@
-outdir = "reconstruction"
+outdir = "reconstruction_res1"
 
-nx = 64 
-ny = 32 
+nx = 80 
+ny = 24 
 nt = 10000
 ts = 100  # save every ts time steps
 
@@ -15,12 +15,12 @@ id_kind = "gaussian"
 runtype = "reconstruction"
 
 id_l_ang = [2,2]
-id_ru = [6.0,6.0]
-id_rl = [1.5,1.5] 
-id_width = [10.0,10.0]
+id_ru = [3.0,  3.0]
+id_rl = [-3.0,-3.0] 
+id_width = [6.0,6.0]
 id_amp = [
 	[0.0,0.0],
-	[0.2,0.0]
+	[0.4,0.0]
 ]  
 # format: [real part, imaginary part]
 

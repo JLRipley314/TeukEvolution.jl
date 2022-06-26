@@ -28,7 +28,7 @@ const max_s = 2
 const max_m = 6
 
 function num_l(ny::Int64)::Int64
-   @assert ny>(2*max_s+2*max_m)+4
+   @assert ny>=(2*max_s+2*max_m)+4
    return ny-2*max_s-2*max_m
 end
 
