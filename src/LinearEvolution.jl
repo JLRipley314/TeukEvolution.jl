@@ -86,7 +86,7 @@ function set_psi3_k!(;
    nx, ny = size(k)
    for j=1:ny
       for i=1:nx
-         k[i,j] = (-  
+         k[i,j] = (- 
                    4.0*R[i]*mu_0[i,j]*psi3[i,j]
                    -  
                    R[i]*tau_0[i,j]*psi4[i,j]
@@ -118,7 +118,7 @@ function set_lam_k!(;
    return nothing
 end
 
-function set_psi2_k!(
+function set_psi2_k!(;
       k::Array{ComplexF64,2},
       psi2::Array{ComplexF64,2},
       psi3::Array{ComplexF64,2},
@@ -142,7 +142,7 @@ function set_psi2_k!(
    return nothing
 end
 
-function set_hmbmb_k!(
+function set_hmbmb_k!(;
       k::Array{ComplexF64,2},
       hmbmb::Array{ComplexF64,2},
       lam::Array{ComplexF64,2},
@@ -162,7 +162,7 @@ function set_hmbmb_k!(
    return nothing
 end
 
-function set_pi_k!(
+function set_pi_k!(;
       k::Array{ComplexF64,2},
       lam::Array{ComplexF64,2},
       hmbmb::Array{ComplexF64,2},
@@ -191,12 +191,10 @@ function set_pi_k!(
    return nothing
 end
 
-function set_hlmb_k!(
+function set_hlmb_k!(;
       k::Array{ComplexF64,2},
-      lam::Array{ComplexF64,2},
       hlmb::Array{ComplexF64,2},
       hmbmb::Array{ComplexF64,2},
-      psi3::Array{ComplexF64,2},
       pi_l::Array{ComplexF64,2},
       mu_0::Array{ComplexF64,2},
       tau_0::Array{ComplexF64,2},
@@ -217,7 +215,7 @@ function set_hlmb_k!(
    return nothing
 end
 
-function set_muhll_k!(
+function set_muhll_k!(;
       k::Array{ComplexF64,2},
       muhll::Array{ComplexF64,2},
       hlmb_edth::Array{ComplexF64,2},
@@ -402,16 +400,16 @@ function set_linear_k!(;
    ##===============
    GHP.set_edth!(edth=psi3_edth,spin=psi3_f.spin,boost=psi3_f.boost,m_ang=m_ang,f=psi3_l,DT=psi3_k,raised=psi3_raised,Op=Op) 
    
-   set_psi2_k!(psi2_k, psi2_l, psi3_l, psi3_edth, mu_0, tau_0, R)
+   set_psi2_k!(k=psi2_k, psi2=psi2_l, psi3=psi3_l, psi3_edth=psi3_edth, mu_0=mu_0, tau_0=tau_0, R=R)
    finish_linear_reconstruction_k!(k=psi2_k, f=psi2_l, DR=psi2_DR, R=R, falloff=psi2_f.falloff, bhm=bhm, cl=cl, dr=dr)
    ##===============
-   set_hmbmb_k!(hmbmb_k, hmbmb_l, lam_l, mu_0, R)
+   set_hmbmb_k!(k=hmbmb_k, hmbmb=hmbmb_l, lam=lam_l, mu_0=mu_0, R=R)
    finish_linear_reconstruction_k!(k=hmbmb_k, f=hmbmb_l, DR=hmbmb_DR, R=R, falloff=hmbmb_f.falloff, bhm=bhm, cl=cl, dr=dr)
    ##===============
-   set_pi_k!(pi_k, lam_l, hmbmb_l, psi3_l, mu_0, tau_0, pi_0, R)
+   set_pi_k!(k=pi_k, lam=lam_l, hmbmb=hmbmb_l, psi3=psi3_l, mu_0=mu_0, tau_0=tau_0, pi_0=pi_0, R=R)
    finish_linear_reconstruction_k!(k=pi_k, f=pi_l, DR=pi_DR, R=R, falloff=pi_f.falloff, bhm=bhm, cl=cl, dr=dr)
    ##===============
-   set_hlmb_k!(hlmb_k, lam_l, hlmb_l, hmbmb_l, psi3_l, pi_l, mu_0, tau_0, R)
+   set_hlmb_k!(k=hlmb_k, hlmb=hlmb_l, hmbmb=hmbmb_l, pi_l=pi_l, mu_0=mu_0, tau_0=tau_0, R=R)
    finish_linear_reconstruction_k!(k=hlmb_k, f=hlmb_l, DR=hlmb_DR, R=R, falloff=hlmb_f.falloff, bhm=bhm, cl=cl, dr=dr)
    ##===============
    GHP.set_edth!(edth=hlmb_edth,    spin=hlmb_f.spin, boost=hlmb_f.boost, m_ang= m_ang,f=hlmb_l,    DT=hlmb_k,    raised=hlmb_raised,    Op=Op) 
@@ -419,10 +417,15 @@ function set_linear_k!(;
    GHP.set_edth!(edth=hmbmb_edth_nm,spin=hmbmb_f.spin,boost=hmbmb_f.boost,m_ang=-m_ang,f=hmbmb_nm_l,DT=hmbmb_k_nm,raised=hmbmb_raised_nm,Op=Op) 
    GHP.set_edth!(edth=hlmb_edth_nm, spin=hlmb_f.spin, boost=hlmb_f.boost, m_ang=-m_ang,f=hlmb_nm_l, DT=hlmb_k_nm, raised=hlmb_raised_nm, Op=Op) 
    
-   set_muhll_k!(muhll_k, muhll_l, hlmb_edth, hlmb_l, pi_edth, pi_l, psi2_l,
-                pi_nm_l, hmbmb_edth_nm, hmbmb_nm_l, hlmb_edth_nm, hlmb_nm_l,
-                mu_0, tau_0, pi_0, 
-                R
+   set_muhll_k!(k=muhll_k, muhll=muhll_l, 
+                hlmb_edth=hlmb_edth, hlmb=hlmb_l, 
+                pi_edth=pi_edth, pi_l=pi_l, 
+                psi2=psi2_l,
+                pi_nm=pi_nm_l, 
+                hmbmb_edth_nm=hmbmb_edth_nm, hmbmb_nm=hmbmb_nm_l, 
+                hlmb_edth_nm=hlmb_edth_nm,   hlmb_nm=hlmb_nm_l,
+                mu_0=mu_0, tau_0=tau_0, pi_0=pi_0, 
+                R=R
                )
    finish_linear_reconstruction_k!(k=muhll_k, f=muhll_l, DR=muhll_DR, R=R, falloff=muhll_f.falloff, bhm=bhm, cl=cl, dr=dr)
    
@@ -820,13 +823,14 @@ function Linear_evolution!(;
       bhm=bhm, cl=cl, dr=dr
      )
     
-   ## Only filter psi4 for now
+   ## First filter psi4 
 
    filter!(psi4_f_pm_np1,psi4_f_pm_tmp,0.5)
    filter!(psi4_p_pm_np1,psi4_p_pm_tmp,0.5) 
    
    filter!(psi4_f_nm_np1,psi4_f_nm_tmp,0.5)
    filter!(psi4_p_nm_np1,psi4_p_nm_tmp,0.5) 
+   
    for j=1:ny
       for i=1:nx
          psi4_f_pm_tmp[i,j] = psi4_f_pm_np1[i,j] 
@@ -841,7 +845,11 @@ function Linear_evolution!(;
 
    angular_matrix_mult!(psi4_f_nm_np1,psi4_f_nm_tmp,fltrM_nm)
    angular_matrix_mult!(psi4_p_nm_np1,psi4_p_nm_tmp,fltrM_nm)
+   
+   ## Filter metric reconstructed variables for stability 
 
+   filter!(psi3_pm_np1,psi3_pm_tmp,0.5)
+   filter!(psi3_nm_np1,psi3_nm_tmp,0.5)
    return nothing
 end
    

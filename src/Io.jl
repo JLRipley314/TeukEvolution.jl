@@ -6,7 +6,7 @@ export save_csv
 Save the real and imaginary parts of level np1
 """
 function save_csv(;
-      tc::Int64,
+      t::Float64,
       mv::Int64,
       outdir::String,
       f)
@@ -14,7 +14,7 @@ function save_csv(;
    nx, ny = f.nx, f.ny 
 
    open("$(outdir)/$(f.name)_re_$mv.csv","a") do out
-      write(out,"$tc,$nx,$ny,")
+      write(out,"$t,$nx,$ny,")
       for i=1:nx
          for j=1:ny
             write(out,"$(f.np1[i,j].re),")
@@ -25,7 +25,7 @@ function save_csv(;
    end
 
    open("$(outdir)/$(f.name)_im_$mv.csv","a") do out
-      write(out,"$tc,$nx,$ny,")
+      write(out,"$t,$nx,$ny,")
       for i=1:nx
          for j=1:ny
             write(out,"$(f.np1[i,j].im),")

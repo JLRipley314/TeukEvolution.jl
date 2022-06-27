@@ -15,7 +15,6 @@ import .Radial
 import .Sphere
 import .BackgroundNP: NP_0 
 import .GHP: GHP_ops
-#import .MetricReconstruction
 
 const half  = 1.0/2.0
 const third = 1.0/3.0

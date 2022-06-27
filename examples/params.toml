@@ -1,9 +1,9 @@
-outdir = "reconstruction_res1"
+outdir = "med"
 
 nx = 80 
 ny = 24 
 nt = 10000
-ts = 100  # save every ts time steps
+ts = 200  # save every ts time steps
 
 psi_spin    = -2 # spin-weight of linear evolution scalar
 psi_falloff = -1 # falloff (in r) of linear evolution scalar

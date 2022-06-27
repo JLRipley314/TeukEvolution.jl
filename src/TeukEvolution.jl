@@ -53,7 +53,6 @@ function launch(paramfile::String)::Nothing
    ##===================
    ## Derived parameters
    ##===================
-   nm   = length(params["m_vals"])
    minr = bhm*(
       1.0 + sqrt(1.0+(bhs/bhm))*sqrt(1.0-(bhs/bhm))
      ) # horizon (uncompactified)
@@ -133,11 +132,11 @@ function launch(paramfile::String)::Nothing
             params["id_amp"][mi][1] + params["id_amp"][mi][2]*im,
             cl, Rv, Yv
          )
-         Io.save_csv(tc=0,mv=mv,outdir=outdir,f=lin_f[mv])
+         Io.save_csv(t=0.0,mv=mv,outdir=outdir,f=lin_f[mv])
          if runtype=="reconstruction"
-            Io.save_csv(tc=0,mv=mv,outdir=outdir,f=res_bianchi3_f[mv])
-            Io.save_csv(tc=0,mv=mv,outdir=outdir,f=lam_f[mv])
-            Io.save_csv(tc=0,mv=mv,outdir=outdir,f=psi3_f[mv])
+            Io.save_csv(t=0.0,mv=mv,outdir=outdir,f=res_bianchi3_f[mv])
+            Io.save_csv(t=0.0,mv=mv,outdir=outdir,f=lam_f[mv])
+            Io.save_csv(t=0.0,mv=mv,outdir=outdir,f=psi3_f[mv])
          end
       end
    elseif params["id_kind"]=="qnm"
@@ -220,12 +219,13 @@ function launch(paramfile::String)::Nothing
          throw(DomainError(runtype,"Unsupported `runtype` in parameter file")) 
       end
       if tc%ts==0
-         println("time/bhm ", tc*dt/bhm)
+         t=tc*dt/bhm
+         println("time/bhm ", t)
          Threads.@threads for mv in Mv 
-            Io.save_csv(tc=tc,mv=mv,outdir=outdir,f=lin_f[mv])
+            Io.save_csv(t=t,mv=mv,outdir=outdir,f=lin_f[mv])
             
             if runtype=="reconstruction"
-               Set_independent_residuals!(
+               #=Set_independent_residuals!(
                      res_bianchi3_f=res_bianchi3_f[mv],
                      res_bianchi2_f=res_bianchi2_f[mv],
                      res_hll_f=res_hll_f[mv],
@@ -242,9 +242,10 @@ function launch(paramfile::String)::Nothing
                      R=Rv,
                      m_ang=mv
                   )
-               Io.save_csv(tc=tc,mv=mv,outdir=outdir,f=res_bianchi3_f[mv])
-               Io.save_csv(tc=tc,mv=mv,outdir=outdir,f=psi3_f[mv])
-               Io.save_csv(tc=tc,mv=mv,outdir=outdir,f=lam_f[mv])
+               =#
+               Io.save_csv(t=t,mv=mv,outdir=outdir,f=res_bianchi3_f[mv])
+               Io.save_csv(t=t,mv=mv,outdir=outdir,f=psi3_f[mv])
+               Io.save_csv(t=t,mv=mv,outdir=outdir,f=lam_f[mv])
             end 
          end 
       end
