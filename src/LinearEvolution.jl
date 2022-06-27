@@ -823,33 +823,22 @@ function Linear_evolution!(;
       bhm=bhm, cl=cl, dr=dr
      )
     
-   ## First filter psi4 
+   ## First in only the radial direction 
+   ## (from experimenting it looks like
+   ## we only need to filter in the radial direction for
+   ## for stability)
 
    filter!(psi4_f_pm_np1,psi4_f_pm_tmp,0.5)
    filter!(psi4_p_pm_np1,psi4_p_pm_tmp,0.5) 
    
    filter!(psi4_f_nm_np1,psi4_f_nm_tmp,0.5)
    filter!(psi4_p_nm_np1,psi4_p_nm_tmp,0.5) 
-   
-   for j=1:ny
-      for i=1:nx
-         psi4_f_pm_tmp[i,j] = psi4_f_pm_np1[i,j] 
-         psi4_p_pm_tmp[i,j] = psi4_p_pm_np1[i,j] 
-         
-         psi4_f_nm_tmp[i,j] = psi4_f_nm_np1[i,j] 
-         psi4_p_nm_tmp[i,j] = psi4_p_nm_np1[i,j] 
-      end
-   end
-   angular_matrix_mult!(psi4_f_pm_np1,psi4_f_pm_tmp,fltrM_pm)
-   angular_matrix_mult!(psi4_p_pm_np1,psi4_p_pm_tmp,fltrM_pm)
 
-   angular_matrix_mult!(psi4_f_nm_np1,psi4_f_nm_tmp,fltrM_nm)
-   angular_matrix_mult!(psi4_p_nm_np1,psi4_p_nm_tmp,fltrM_nm)
-   
-   ## Filter metric reconstructed variables for stability 
-
+   filter!(lam_pm_np1, lam_pm_tmp, 0.5)
+   filter!(lam_nm_np1, lam_nm_tmp, 0.5)
    filter!(psi3_pm_np1,psi3_pm_tmp,0.5)
    filter!(psi3_nm_np1,psi3_nm_tmp,0.5)
+   
    return nothing
 end
    
