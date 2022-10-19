@@ -12,11 +12,11 @@ Computes the norm of the difference between the numerical and
 exact derivative.
 
 norms_diff(
-   nx::Int64,
-   ny::Int64
-   )::(Float64,Float64)
+   nx::Integer
+   ny::Integer
+   )::(Real,Real)
 """
-function norms_diff(nx::Int64,ny::Int64)::Tuple{Float64,Float64}
+function norms_diff(nx::Integer,ny::Integer)::Tuple{Real,Real}
    dr = 1.0/(nx-1.0)
    dy = 1.0/(ny-1.0)
 

@@ -1,7 +1,6 @@
 """
 General evolution for spin s field about Kerr
 """
-
 module Evolution
 
 include("Fields.jl")

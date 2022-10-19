@@ -1,4 +1,3 @@
-using TeukEvolution
 using Test
 
 include("TestRadial.jl")

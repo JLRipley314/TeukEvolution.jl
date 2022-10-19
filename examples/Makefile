@@ -1,4 +1,4 @@
 debug:
-	julia run.jl params.toml 
+	julia run.jl
 fast:
-	julia --optimize=3 --check-bounds=no run.jl params.toml
+	julia --optimize=3 --check-bounds=no run.jl
