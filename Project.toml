@@ -11,7 +11,7 @@ Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
-FastGaussQuadrature = "0.4"
+FastGaussQuadrature = "0.4, 0.5"
 HDF5 = "0.16"
 Jacobi = "0.5"
 Polynomials = "2,3"
