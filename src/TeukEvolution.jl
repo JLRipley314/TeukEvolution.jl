@@ -60,11 +60,11 @@ function launch(params::Dict{String,Any})::Nothing
     ##===================
     ## Derived parameters
     ##===================
-    minr = bhm * (1 + sqrt(1 + (bhs / bhm)) * sqrt(1 - (bhs / bhm))) # horizon (uncompactified)
-    maxR = (cl^2) / minr
+    minr = bhm * (1 + sqrt(1 - (bhs / bhm)^2) ) # horizon (uncompactified)
+    maxR = 1 / minr # dt should not depend on cl
     dr = maxR / (nx - 0)
-    dt = min(cfl * dr, 6 / ny^2)
-
+    dt = min(cfl * dr * bhm^2, 6 / ny^2) # make the time step roughly proportional to mass instead of inversely proportional
+    println(dt)
     println("Number of threads: $(Threads.nthreads())")
 
     println("Setting up output directory")
@@ -279,6 +279,7 @@ function launch(params::Dict{String,Any})::Nothing
                 Yv,
             )
             Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lin_f[mv])
+            Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lin_p[mv])
             if runtype == "reconstruction"
                 Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = res_bianchi3_f[mv])
                 Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lam_f[mv])
@@ -286,7 +287,26 @@ function launch(params::Dict{String,Any})::Nothing
             end
         end
     elseif params["id_kind"] == "qnm"
-        Id.set_qnm!()
+        for (mi, mv) in enumerate(Mv)
+            Id.set_qnm!(
+                lin_f[mv],
+                lin_p[mv],
+                psi_spin,
+                mv,
+                params["id_filename"],
+                params["id_amp"],
+                params["id_m"],
+                Rv,
+                Yv,
+            )
+            Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lin_f[mv])
+            Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lin_p[mv])
+            if runtype == "reconstruction"
+                Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = res_bianchi3_f[mv])
+                Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lam_f[mv])
+                Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = psi3_f[mv])
+            end
+        end
     else
         throw(DomainError(params["id_kind"], "Unsupported `id_kind` in parameter file"))
     end
@@ -390,6 +410,7 @@ function launch(params::Dict{String,Any})::Nothing
             println("time/bhm ", t)
             Threads.@threads for mv in Mv
                 Io.save_csv(t = t, mv = mv, outdir = outdir, f = lin_f[mv])
+                Io.save_csv(t = t, mv = mv, outdir = outdir, f = lin_p[mv])
 
                 if runtype == "reconstruction"
                     #=Set_independent_residuals!(

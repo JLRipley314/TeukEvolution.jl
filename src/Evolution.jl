@@ -27,6 +27,7 @@ struct Evo_lin_f
     B_pp::Array{ComplexF64,2}
     B_pq::Array{ComplexF64,2}
     B_pf::Array{ComplexF64,2}
+    pre::Array{Float64,2}
 
     S_lapl::Array{Float64,2}
     S_fltr::Array{Float64,2}
@@ -74,14 +75,8 @@ struct Evo_lin_f
         end
 
         S_lapl = Sphere.swal_laplacian_matrix(ny, spin, mv)
-        S_fltr = Sphere.swal_filter_matrix(ny, spin, mv)
-
-        for i = 1:ny
-            for j = 1:ny
-                S_lapl[i, j] = pre[i, j] * S_lapl[i, j]
-                S_fltr[i, j] = S_fltr[i, j]
-            end
-        end
+        S_fltr = Sphere.swal_killtop_matrix(ny, spin, mv, 2)
+        #Sphere.swal_filter_matrix(ny, spin, mv)
 
         for j = 1:ny
             cy = Cvals[j]
@@ -115,16 +110,10 @@ struct Evo_lin_f
                     -(2 * R / (cl^4)) *
                     (im * bhs * (cl^2) * mv - (bhs^2) * R + (cl^2) * bhm * (1 + spin))
 
-                A_pp[i, j] *= pre[i, j]
-                A_pq[i, j] *= pre[i, j]
-
-                B_pp[i, j] *= pre[i, j]
-                B_pq[i, j] *= pre[i, j]
-                B_pf[i, j] *= pre[i, j]
             end
         end
 
-        return new(A_pp, A_pq, B_pp, B_pq, B_pf, S_lapl, S_fltr, mv)
+        return new(A_pp, A_pq, B_pp, B_pq, B_pf, pre, S_lapl, S_fltr, mv)
     end
 end
 
@@ -167,6 +156,7 @@ function set_kp(
     p_rd1::Array{ComplexF64,2},
     f::Array{ComplexF64,2},
     p::Array{ComplexF64,2},
+    pre::Array{Float64,2},
     A_pp::Array{Float64,2},
     A_pq::Array{Float64,2},
     B_pp::Array{ComplexF64,2},
@@ -176,7 +166,7 @@ function set_kp(
     nx, ny = size(kp)
     for j = 1:ny
         for i = 1:nx
-            kp[i, j] = (
+            kp[i, j] = pre[i, j] * (
                 A_pp[i, j] * p_rd1[i, j] +
                 A_pq[i, j] * f_rd2[i, j] +
                 B_pp[i, j] * p[i, j] +
@@ -213,6 +203,7 @@ function Evolve_lin_f!(lin_f, lin_p, Evo::Evo_lin_f, dr::Float64, dt::Float64)::
     p_k = lin_p.k
     p_rd1 = lin_p.rad_d1
 
+    pre = Evo.pre
     A_pp = Evo.A_pp
     A_pq = Evo.A_pq
     B_pp = Evo.B_pp
@@ -231,7 +222,7 @@ function Evolve_lin_f!(lin_f, lin_p, Evo::Evo_lin_f, dr::Float64, dt::Float64)::
 
     Sphere.angular_matrix_mult!(f_sph_lap, f_n, laplM)
 
-    set_kp(p_k, f_rd1, f_rd2, f_sph_lap, p_rd1, f_n, p_n, A_pp, A_pq, B_pp, B_pq, B_pf)
+    set_kp(p_k, f_rd1, f_rd2, f_sph_lap, p_rd1, f_n, p_n, pre, A_pp, A_pq, B_pp, B_pq, B_pf)
     for j = 1:ny
         for i = 1:nx
             f_k[i, j] = p_n[i, j]
@@ -250,7 +241,7 @@ function Evolve_lin_f!(lin_f, lin_p, Evo::Evo_lin_f, dr::Float64, dt::Float64)::
 
     Sphere.angular_matrix_mult!(f_sph_lap, f_tmp, laplM)
 
-    set_kp(p_k, f_rd1, f_rd2, f_sph_lap, p_rd1, f_tmp, p_tmp, A_pp, A_pq, B_pp, B_pq, B_pf)
+    set_kp(p_k, f_rd1, f_rd2, f_sph_lap, p_rd1, f_tmp, p_tmp, pre, A_pp, A_pq, B_pp, B_pq, B_pf)
     for j = 1:ny
         for i = 1:nx
             f_k[i, j] = p_tmp[i, j]
@@ -269,7 +260,7 @@ function Evolve_lin_f!(lin_f, lin_p, Evo::Evo_lin_f, dr::Float64, dt::Float64)::
 
     Sphere.angular_matrix_mult!(f_sph_lap, f_tmp, laplM)
 
-    set_kp(p_k, f_rd1, f_rd2, f_sph_lap, p_rd1, f_tmp, p_tmp, A_pp, A_pq, B_pp, B_pq, B_pf)
+    set_kp(p_k, f_rd1, f_rd2, f_sph_lap, p_rd1, f_tmp, p_tmp, pre, A_pp, A_pq, B_pp, B_pq, B_pf)
     for j = 1:ny
         for i = 1:nx
             f_k[i, j] = p_tmp[i, j]
@@ -288,7 +279,7 @@ function Evolve_lin_f!(lin_f, lin_p, Evo::Evo_lin_f, dr::Float64, dt::Float64)::
 
     Sphere.angular_matrix_mult!(f_sph_lap, f_tmp, laplM)
 
-    set_kp(p_k, f_rd1, f_rd2, f_sph_lap, p_rd1, f_tmp, p_tmp, A_pp, A_pq, B_pp, B_pq, B_pf)
+    set_kp(p_k, f_rd1, f_rd2, f_sph_lap, p_rd1, f_tmp, p_tmp, pre, A_pp, A_pq, B_pp, B_pq, B_pf)
     for j = 1:ny
         for i = 1:nx
             f_k[i, j] = p_tmp[i, j]
