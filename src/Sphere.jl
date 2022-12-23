@@ -14,6 +14,7 @@ export Y_vals,
     swal_raising_matrix,
     swal_lowering_matrix,
     swal_filter_matrix,
+    swal_killtop_matrix,
     angular_matrix_mult!
 
 """
@@ -262,6 +263,36 @@ function swal_filter_matrix(ny::Integer, spin::Integer, m_ang::Integer)::Matrix{
             for l = lmin:(nl-1+lmin)
                 filter[j, i] +=
                     exp(-30.0 * (l / (nl - 1.0))^10) *
+                    (swal(spin, m_ang, l, yv[i]) * swal(spin, m_ang, l, yv[j]))
+            end
+            filter[j, i] *= wv[j]
+        end
+    end
+    return filter
+end
+
+"""
+    swal_killtop_matrix(
+          ny::Integer,
+          spin::Integer,
+          m_ang::Integer
+       )::Matrix{<:Real}
+
+Compute the matrix to compute killtopN low pass filter.
+Multiply the matrix on the left: v[i]*M[i,j] -> v[j]
+"""
+function swal_killtop_matrix(ny::Integer, spin::Integer, m_ang::Integer, N::Integer)::Matrix{<:Real}
+
+    yv, wv = FGQ.gausslegendre(ny)
+    nl = num_l(ny)
+    filter = zeros(Float64, ny, ny)
+    lmin = max(abs(spin), abs(m_ang))
+    @assert nl > N+1
+
+    for j = 1:ny
+        for i = 1:ny
+            for l = lmin:(nl-1+lmin-N)
+                filter[j, i] +=
                     (swal(spin, m_ang, l, yv[i]) * swal(spin, m_ang, l, yv[j]))
             end
             filter[j, i] *= wv[j]

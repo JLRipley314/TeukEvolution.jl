@@ -99,12 +99,11 @@ produced from TeukolskyQNMFunctions.jl
 function set_qnm!(
     f,
     p,
-    s::Integer,
-    l::Integer,
+    spin::Integer,
     mv::Integer,
-    n::Real,
-    a::Real,
+    filename::String,
     amp::Real,
+    idm::Int,
     Rv::Vector{<:Real},
     Yv::Vector{<:Real},
 )::Nothing
@@ -112,37 +111,40 @@ function set_qnm!(
     @assert f.mv == mv
     @assert p.mv == mv
     nx, ny = f.nx, f.ny
-
-    aval = round(digits = 12, a)
-
-    qnmpath = dirname(pwd()) * "/qnm"
-    h5f = h5read(qnmpath * "/prec1024_nr$(nr)_s$(s)_m$(mv)_n$(n).h5", "[a=$(aval),l=$(l)]")
+    qnmpath = dirname(pwd()) * "/qnm/"
+    h5f = h5read(qnmpath * filename, "[a=0.0,l=2]")
     rpoly = ChebyshevT(h5f["radial_coef"])
-    lpoly = ChebyshevT(h5f["angular_coef"])
-    lmin = max(abs(s), abs(mv))
-    lvals = [i + lmin for i in range(length(lpoly))]
-    for j = 1:ny
-        for i = 1:nx
-            f.n[i, j] = roply(Rv[i])
-            f.n[i, j] *= sum([
-                lpoly[i] * swal(spin, mv, (i - 1) + lmin, Yv[j]) for i = 0:length(lpoly)
-            ])
+    lpoly = h5f["angular_coef"]
+    lmin = max(abs(spin), abs(mv))
+    max_val = 0.0
+
+    # only set the field if an evolution m matches the m mode in initial data
+    if mv==idm
+        for j = 1:ny
+            for i = 1:nx
+                f.n[i, j] = rpoly( (2 * Rv[i])/maximum(Rv) -1 )
+                f.n[i, j] *= sum([
+                    lpoly[l+1] * swal(spin, mv, l + lmin, Yv[j]) for l = 0:(length(lpoly)-1)
+                ])
+                max_val = max(abs(f.n[i, j]), max_val)
+            end
         end
-    end
-    ## rescale  
-    for j = 1:ny
-        for i = 1:nx
-            f.n[i, j] *= amp / max_val
-            f.np1[i, j] = f.n[i, j]
+
+        for j = 1:ny
+            for i = 1:nx
+                f.n[i, j] *= amp / max_val
+                f.np1[i, j] = f.n[i, j]
+            end
         end
-    end
-    ## p = f,t = -iωf  
-    omega = h5f["omega"]
-    for j = 1:ny
-        for i = 1:nx
-            p.n[i, j] = -im * omega * f.n[i, j]
-            p.np1[i, j] = p.n[i, j]
+        ## p = f,t = -iωf  
+        omega = h5f["omega"]
+        for j = 1:ny
+            for i = 1:nx
+                p.n[i, j] = -im * omega * f.n[i, j]
+                p.np1[i, j] = p.n[i, j]
+            end
         end
+
     end
     return nothing
 end
