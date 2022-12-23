@@ -5,7 +5,7 @@ import .TeukEvolution as TE
 # write the parameter file
 
 params = Dict(
-    "outdir" => "low_qnm",
+    "outdir" => "low_qnm_8",
     "nx" => 128,   # number of x radial grid points
     "ny" => 24,    # number of y collocation points
     "nt" => 80000, # number of time steps
@@ -14,11 +14,11 @@ params = Dict(
     #"id_kind" => "gaussian",
     "id_kind" => "qnm",
     "runtype" => "linear_field",
-    "m_vals" => [-2, 2],   # m angular values
+    "m_vals" => [2],   # m angular values
     "id_m" => 2,
     "id_amp" => 1.0,
-    "id_filename" => "s-2_m2_n0.h5",
-
+    "id_filename" => "a0.0_l2_m2.h5",
+    "id_overtone_n" => 8,
     # format: for each m value: [real part, imaginary part]
     "cl" => 1.0, # compactification scale
     "cfl" => 0.5, # CFL number

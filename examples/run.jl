@@ -6,10 +6,10 @@ import .TeukEvolution as TE
 
 params = Dict(
     "outdir" => "low",
-    "nx" => 64,   # number of x radial grid points
+    "nx" => 128,   # number of x radial grid points
     "ny" => 24,    # number of y collocation points
-    "nt" => 20000, # number of time steps
-    "ts" => 800,   # save every ts time steps
+    "nt" => 80000, # number of time steps
+    "ts" => 100,   # save every ts time steps
     "psi_spin" => -2, # spin-weight of linear evolution scalar
     "id_kind" => "gaussian",
     "runtype" => "linear_field",
@@ -24,7 +24,7 @@ params = Dict(
     "cl" => 1.0, # compactification scale
     "cfl" => 0.5, # CFL number
     "bhs" => 0.0, # black hole spin 
-    "bhm" => 1.0, # black hole mass
+    "bhm" => 1, # black hole mass
     "precision" => Float64, # precision the code is compiled at
 )
 

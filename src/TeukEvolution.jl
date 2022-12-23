@@ -62,7 +62,7 @@ function launch(params::Dict{String,Any})::Nothing
     ##===================
     minr = bhm * (1 + sqrt(1 - (bhs / bhm)^2) ) # horizon (uncompactified)
     maxR = 1 / minr # dt should not depend on cl
-    dr = maxR / (nx - 0)
+    dr = maxR / (nx - 1)
     dt = min(cfl * dr * bhm^2, 6 / ny^2) # make the time step roughly proportional to mass instead of inversely proportional
     println(dt)
     println("Number of threads: $(Threads.nthreads())")
@@ -293,6 +293,7 @@ function launch(params::Dict{String,Any})::Nothing
                 lin_p[mv],
                 psi_spin,
                 mv,
+                params["id_overtone_n"],
                 params["id_filename"],
                 params["id_amp"],
                 params["id_m"],

@@ -101,6 +101,7 @@ function set_qnm!(
     p,
     spin::Integer,
     mv::Integer,
+    n::Integer,
     filename::String,
     amp::Real,
     idm::Int,
@@ -112,7 +113,7 @@ function set_qnm!(
     @assert p.mv == mv
     nx, ny = f.nx, f.ny
     qnmpath = dirname(pwd()) * "/qnm/"
-    h5f = h5read(qnmpath * filename, "[a=0.0,l=2]")
+    h5f = h5read(qnmpath * filename, "[n=$(n)]")
     rpoly = ChebyshevT(h5f["radial_coef"])
     lpoly = h5f["angular_coef"]
     lmin = max(abs(spin), abs(mv))

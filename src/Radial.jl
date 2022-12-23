@@ -11,7 +11,7 @@ export R_vals, set_d1!, set_d2!, filter!
 Computes array of compactified radial points 
 """
 function R_vals(nx::Integer, dr::Real)::Vector{<:Real}
-    return [dr * i for i = 1:nx]
+    return [dr * i for i = 0:nx-1]
 end
 
 """
