@@ -1,6 +1,5 @@
 # TeukEvolution.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JLRipley314.github.io/TeukEvolution.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JLRipley314.github.io/TeukEvolution.jl/dev)
 [![Build Status](https://github.com/JLRipley314/TeukEvolution.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JLRipley314/TeukEvolution.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/JLRipley314/TeukEvolution.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JLRipley314/TeukEvolution.jl)
@@ -36,16 +35,16 @@ ripley[at]illinois[dot]edu
 If you use this code, the best thing to cite right now would be
 
 ```
-	@article{Ripley:2020xby,
-	    author = "Ripley, Justin L. and Loutrel, Nicholas and Giorgi, Elena and Pretorius, Frans",
-	    title = "{Numerical computation of second order vacuum perturbations of Kerr black holes}",
-	    eprint = "2010.00162",
-	    archivePrefix = "arXiv",
-	    primaryClass = "gr-qc",
-	    doi = "10.1103/PhysRevD.103.104018",
-	    journal = "Phys. Rev. D",
-	    volume = "103",
-	    pages = "104018",
-	    year = "2021"
-	}
+@article{Ripley:2020xby,
+    author = "Ripley, Justin L. and Loutrel, Nicholas and Giorgi, Elena and Pretorius, Frans",
+    title = "{Numerical computation of second order vacuum perturbations of Kerr black holes}",
+    eprint = "2010.00162",
+    archivePrefix = "arXiv",
+    primaryClass = "gr-qc",
+    doi = "10.1103/PhysRevD.103.104018",
+    journal = "Phys. Rev. D",
+    volume = "103",
+    pages = "104018",
+    year = "2021"
+}
 ```
