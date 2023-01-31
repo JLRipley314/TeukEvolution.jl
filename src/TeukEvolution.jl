@@ -62,7 +62,7 @@ function launch(params::Dict{String,Any})::Nothing
     ##===================
     minr = bhm * (1 + sqrt(1 - (bhs / bhm)^2) ) # horizon (uncompactified)
     maxR = 1 / minr # dt should not depend on cl
-    dr = maxR / (nx - 0)
+    dr = maxR / (nx - 1)
     dt = min(cfl * dr * bhm^2, 6 / ny^2) # make the time step roughly proportional to mass instead of inversely proportional
     println(dt)
     println("Number of threads: $(Threads.nthreads())")
@@ -74,6 +74,9 @@ function launch(params::Dict{String,Any})::Nothing
         rm(outdir, recursive = true)
         mkdir(outdir)
     end
+    println("Writing input parameters")
+    cp("./run.jl", outdir*"/run.jl")
+
     println("Initializing constant fields")
     Rv = Radial.R_vals(nx, dr)
     Yv = Sphere.Y_vals(ny)
@@ -277,6 +280,10 @@ function launch(params::Dict{String,Any})::Nothing
                 cl,
                 Rv,
                 Yv,
+                params["ingoing"],
+                dr,
+                nx,
+                ny,
             )
             Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lin_f[mv])
             Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lin_p[mv])
@@ -293,6 +300,7 @@ function launch(params::Dict{String,Any})::Nothing
                 lin_p[mv],
                 psi_spin,
                 mv,
+                params["id_overtone_n"],
                 params["id_filename"],
                 params["id_amp"],
                 params["id_m"],
