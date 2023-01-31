@@ -74,6 +74,9 @@ function launch(params::Dict{String,Any})::Nothing
         rm(outdir, recursive = true)
         mkdir(outdir)
     end
+    println("Writing input parameters")
+    cp("./run.jl", outdir*"/run.jl")
+
     println("Initializing constant fields")
     Rv = Radial.R_vals(nx, dr)
     Yv = Sphere.Y_vals(ny)
@@ -277,6 +280,10 @@ function launch(params::Dict{String,Any})::Nothing
                 cl,
                 Rv,
                 Yv,
+                params["ingoing"],
+                dr,
+                nx,
+                ny,
             )
             Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lin_f[mv])
             Io.save_csv(t = 0.0, mv = mv, outdir = outdir, f = lin_p[mv])

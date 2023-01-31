@@ -1,7 +1,10 @@
 module Id
 
 include("Sphere.jl")
+include("Radial.jl")
+
 import .Sphere: swal
+import .Radial: set_d1!
 
 import Polynomials: ChebyshevT
 import HDF5: h5read
@@ -39,6 +42,10 @@ function set_gaussian!(
     cl::Real,
     Rv::Vector{<:Real},
     Yv::Vector{<:Real},
+    Ingoing::Bool,
+    dr::Float64,
+    nx::Integer,
+    ny::Integer,
 )::Nothing
     @assert f.mv == mv
     @assert p.mv == mv
@@ -48,7 +55,9 @@ function set_gaussian!(
     max_val = 0.0
 
     for j = 1:ny
-        for i = 1:nx
+        f.n[1,j] = 0.0
+        p.n[1,j] = 0.0
+        for i = 2:nx
             r = (cl^2) / Rv[i]
 
             bump = 0.0
@@ -58,18 +67,29 @@ function set_gaussian!(
 
             f.n[i, j] = (((r - rl) / width)^2) * (((ru - r) / width)^2) * bump
             f.n[i, j] *= swal(spin, mv, l_ang, Yv[j])
-
+            
             p.n[i, j] = 0.0
-
+            
             max_val = max(abs(f.n[i, j]), max_val)
         end
     end
 
+
+    if Ingoing==true
+        f_rd1 = zeros(ComplexF64, nx, ny)
+        set_d1!(f_rd1, f.n, dr)
+        for j = 1:ny
+            for i = 1:nx
+                p.n[i,j] += - Rv[i] * Rv[i] / (2 + 4 * Rv[i]) * f_rd1[i,j]
+            end
+        end
+    end
     ## rescale
 
     for j = 1:ny
         for i = 1:nx
             f.n[i, j] *= amp / max_val
+            p.n[i, j] *= amp / max_val
 
             f.np1[i, j] = f.n[i, j]
             p.np1[i, j] = p.n[i, j]
@@ -125,7 +145,7 @@ function set_qnm!(
             for i = 1:nx
                 f.n[i, j] = rpoly( (2 * Rv[i])/maximum(Rv) -1 )
                 f.n[i, j] *= sum([
-                    lpoly[l+1] * swal(spin, mv, l + lmin, Yv[j]) for l = 0:(length(lpoly)-1)
+                    (-1)^l * lpoly[l+1] * swal(spin, mv, l + lmin, Yv[j]) for l = 0:(length(lpoly)-1)
                 ])
                 max_val = max(abs(f.n[i, j]), max_val)
             end
@@ -138,7 +158,7 @@ function set_qnm!(
             end
         end
         ## p = f,t = -iωf  
-        omega = h5f["omega"]
+        omega = h5f["omega"][1]
         for j = 1:ny
             for i = 1:nx
                 p.n[i, j] = -im * omega * f.n[i, j]
