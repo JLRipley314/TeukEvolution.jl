@@ -4,7 +4,6 @@ Spin-weighted spherical harmonics and associated functions and operators.
 module Sphere
 
 import FastGaussQuadrature as FGQ
-import Jacobi: jacobi
 
 export Y_vals,
     cos_vals,
@@ -16,6 +15,40 @@ export Y_vals,
     swal_filter_matrix,
     swal_killtop_matrix,
     angular_matrix_mult!
+
+
+"""
+    jacobi(x, n::Integer, a, b)
+
+    The Jacobi polynomial.
+"""
+function jacobi(x, n::Integer, a, b)
+    ox = one(x)
+    zx = zero(x)
+    if n == 0
+        return ox
+    elseif n == 1
+        return (ox / 2) * (a - b + (a + b + 2) * x)
+    end
+
+    p0 = ox
+    p1 = (ox / 2) * (a - b + (a + b + 2) * x)
+    p2 = zx
+
+    for i = 1:(n-1)
+        a1 = 2 * (i + 1) * (i + a + b + 1) * (2 * i + a + b)
+        a2 = (2 * i + a + b + 1) * (a * a - b * b)
+        a3 = (2 * i + a + b) * (2 * i + a + b + 1) * (2 * i + a + b + 2)
+        a4 = 2 * (i + a) * (i + b) * (2 * i + a + b + 2)
+        p2 = (ox / a1) * ((a2 + a3 * x) * p1 - a4 * p0)
+
+        p0 = p1
+        p1 = p2
+    end
+
+    return p2
+end
+
 
 """
     num_l(
@@ -95,25 +128,25 @@ end
 
 Compute the spin-weighted associated Legendre function Y^s_{lm}(y).
 """
-function swal(spin::Integer, m_ang::Integer, l_ang::Integer, y::Real)::Real
+function swal(spin::TI, m_ang::TI, l_ang::TI, y::TR) where {TI<:Integer,TR<:Number}
     @assert l_ang >= abs(m_ang)
 
-    al = abs(m_ang - spin)
-    be = abs(m_ang + spin)
+    al = TI(abs(m_ang - spin))
+    be = TI(abs(m_ang + spin))
     @assert((al + be) % 2 == 0)
-    n = l_ang - (al + be) / 2
+    n = TI(l_ang - (al + be) // 2)
 
     if n < 0
-        return convert(Float64, 0)
+        return convert(TR, 0)
     end
 
     norm = sqrt(
-        (2 * n + al + be + 1) * (2^(-al - be - 1.0)) * factorial(n + al + be) /
-        factorial(n + al) * factorial(n) / factorial(n + be),
+        (2 * n + al + be + 1) * (2^(-al - be - 1.0)) * factorial(big(n + al + be)) /
+        factorial(big(n + al)) * factorial(big(n)) / factorial(big(n + be)),
     )
     norm *= (-1)^(max(m_ang, -spin))
 
-    return norm * ((1 - y)^(al / 2.0)) * ((1 + y)^(be / 2.0)) * jacobi(y, n, al, be)
+    return TR(norm) * ((1 - y)^(al / 2.0)) * ((1 + y)^(be / 2.0)) * jacobi(y, n, al, be)
 end
 
 """

@@ -5,12 +5,12 @@ import .TeukEvolution as TE
 # write the parameter file
 
 params = Dict(
-    "outdir" => "low",
+    "outdir" => "low_sp2",
     "nx" => 128,   # number of x radial grid points
     "ny" => 24,    # number of y collocation points
     "nt" => 80000, # number of time steps
-    "ts" => 100,   # save every ts time steps
-    "psi_spin" => -2, # spin-weight of linear evolution scalar
+    "ts" => 500,   # save every ts time steps
+    "psi_spin" => +2, # spin-weight of linear evolution scalar
     "id_kind" => "gaussian",
     "runtype" => "linear_field",
     "m_vals" => [-2, 2],   # m angular values
