@@ -19,6 +19,8 @@ params = Dict(
     "id_rl" => [-3.0, -3.0],
     "id_width" => [6.0, 6.0],
 
+    "ingoing" => true, # ingoing wave
+
     # format: for each m value: [real part, imaginary part]
     "id_amp" => [[0.0, 0.0], [0.4, 0.0]],
     "cl" => 1.0, # compactification scale
