@@ -113,8 +113,8 @@ end
         )::Nothing
 
 Initial qnm initial data for psi, read in from an HDF5 file
-produced from TeukolskyQNMFunctions.jl
-(see https://github.com/JLRipley314/TeukolskyQNMFunctions.jl).
+produced from 
+https://github.com/JLRipley314/TeukolskyQNMFunctions.jl.
 """
 function set_qnm!(
     f,
@@ -124,7 +124,7 @@ function set_qnm!(
     n::Integer,
     filename::String,
     amp::Real,
-    idm::Int,
+    idm::Integer,
     Rv::Vector{<:Real},
     Yv::Vector{<:Real},
 )::Nothing
@@ -132,14 +132,16 @@ function set_qnm!(
     @assert f.mv == mv
     @assert p.mv == mv
     nx, ny = f.nx, f.ny
-    qnmpath = dirname(pwd()) * "/qnm/"
-    h5f = h5read(qnmpath * filename, "[n=$(n)]")
+    h5f = h5read(dirname(pwd()) * "/qnm/" * filename, "[n=$(n)]")
     rpoly = ChebyshevT(h5f["radial_coef"])
     lpoly = h5f["angular_coef"]
     lmin = max(abs(spin), abs(mv))
     max_val = 0.0
 
     # only set the field if an evolution m matches the m mode in initial data
+    # NOTE: we need to multiply the spin-weighted coefficients by (-1)^l due
+    # as apprently there is a global parity inversion between
+    # TeukolskyQNMFunctions.jl and TeukEvolution.jl
     if mv==idm
         for j = 1:ny
             for i = 1:nx

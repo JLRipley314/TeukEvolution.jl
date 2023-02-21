@@ -1,6 +1,5 @@
 ## Quasinormal modes
 
-Quasinormal mode files generated from
+Quasinormal mode files generated from the
 [TeukolskyQNMFunctions.jl](https://github.com/JLRipley314/TeukolskyQNMFunctions.jl)
-for quasinormal mode initial data. 
-
+code, for quasinormal mode initial data (see the `run_qnm.jl` file under `examples`). 
