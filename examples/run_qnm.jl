@@ -9,12 +9,12 @@ import .TeukEvolution as TE
 # TeukolskyQNMFunctions.jl code.
 
 params = Dict(
-    "outdir" => "s-2_m0_n0",
-    "nx" => 128,        # number of x radial grid points
+    "outdir" => "s2_m0_n0_a0.7",
+    "nx" => 256,        # number of x radial grid points
     "ny" => 32,         # number of y collocation points
-    "nt" => 160000,     # number of time steps
-    "ts" => 400,        # save every ts time steps
-    "psi_spin" => -2,   # spin-weight of linear evolution scalar
+    "nt" => 320000,     # number of time steps
+    "ts" => 800,        # save every ts time steps
+    "psi_spin" => +2,   # spin-weight of linear evolution scalar
     "id_kind" => "qnm", # read from qnm files
     "m_vals" => [2],    # m angular values
     
@@ -30,7 +30,7 @@ params = Dict(
     "id_m" => 2,          # angular number for qnm initial data  
     "id_amp" => 1.0,      # initial amplitude of the qnm (max abs of field)
     "id_overtone_n" => 0, # overtone number to run
-    "id_filename" => "s-2_l2_m2_a0.0.h5" # file name specifies the l angular number and black hole spin
+    "id_filename" => "s2_l2_m2_a0.7.h5" # file name specifies the l angular number and black hole spin
                                          # NOTE: make sure s,m,a match the rest of the input!!!
 )
 
