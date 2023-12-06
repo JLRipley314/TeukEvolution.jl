@@ -48,20 +48,16 @@ ripley[at]illinois[dot]edu
 
 ## Citation 
 
-If you use this code, the best thing to cite right now would be
-
+If you use this code, the best thing to cite right now would be the below reference, as it describes the newest version of the code.
 ```
-@article{Ripley:2020xby,
-    author = "Ripley, Justin L. and Loutrel, Nicholas and Giorgi, Elena and Pretorius, Frans",
-    title = "{Numerical computation of second order vacuum perturbations of Kerr black holes}",
-    eprint = "2010.00162",
+@article{Zhu:2023mzv,
+    author = "Zhu, Hengrui and Ripley, Justin L. and C\'ardenas-Avenda\~no, Alejandro and Pretorius, Frans",
+    title = "{Challenges in Quasinormal Mode Extraction: Perspectives from Numerical solutions to the Teukolsky Equation}",
+    eprint = "2309.13204",
     archivePrefix = "arXiv",
     primaryClass = "gr-qc",
-    doi = "10.1103/PhysRevD.103.104018",
-    journal = "Phys. Rev. D",
-    volume = "103",
-    pages = "104018",
-    year = "2021"
+    month = "9",
+    year = "2023"
 }
 ```
 
@@ -79,6 +75,23 @@ If you make use of quasinormal mode intial data, please also cite
     number = "14",
     pages = "145009",
     year = "2022"
+}
+```
+
+The main ideas behind this code (e.g. using a spectral basis to compute the GHP angular derivatives) were originally explained in the below article.
+Granted, this reference is more focused on quadratic mode coupling, so only cite it if you feel its relevant to your use case. 
+```
+@article{Ripley:2020xby,
+    author = "Ripley, Justin L. and Loutrel, Nicholas and Giorgi, Elena and Pretorius, Frans",
+    title = "{Numerical computation of second order vacuum perturbations of Kerr black holes}",
+    eprint = "2010.00162",
+    archivePrefix = "arXiv",
+    primaryClass = "gr-qc",
+    doi = "10.1103/PhysRevD.103.104018",
+    journal = "Phys. Rev. D",
+    volume = "103",
+    pages = "104018",
+    year = "2021"
 }
 ```
 
